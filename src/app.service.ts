@@ -65,10 +65,10 @@ export class AppService {
     return 'Nikhil'
   }
 
-  getDataFromHook(data: GitHubPushEvent) {
+  async getDataFromHook(data: GitHubPushEvent) {
     console.log("Data",data);
     const { before , after } = data;
-    const reviews=this.codeReviewService.generateReview(before,after)
-    console.log(reviews);
+    const reviews=await this.codeReviewService.generateReview(before,after)
+    console.log("Payload for Review",reviews);
   }
 }
