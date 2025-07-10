@@ -7,6 +7,7 @@ export class AppService {
   }
 
   getDataFromHook(data: any) {
-    console.log(data);
+    console.log(JSON.parse(data));
+
   }
 }
