@@ -31,9 +31,14 @@ export class AppController {
   getReview(@Body() requestData: any): { summary: string } {
     const { filename, code } = requestData;
     console.log("Code", code);
-    
+
     // Mock analysis logic for now
     const summary = `✅ Received file: ${filename}\n🔍 Code length: ${code.length} characters\n💡 Suggestion: Check for typos like 'concole.log'`;
     return { summary };
+  }
+
+  @Post('hooks')
+  getDataFromHook(@Body() body: any) {
+    console.log("Body", body);
   }
 }
