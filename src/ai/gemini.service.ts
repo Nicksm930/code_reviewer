@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { AiProvider } from './ai.provider';
 import { ConfigService } from '@nestjs/config';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import * as path from 'path';
+import { ReviewPayloadItem } from 'src/app.service';
 
 @Injectable()
 export class GeminiService extends AiProvider {
@@ -21,65 +21,63 @@ export class GeminiService extends AiProvider {
         this.model = genAI.getGenerativeModel({ model: 'models/gemini-2.0-flash' })
     }
 
+    async reviewWithGemini(payload: ReviewPayloadItem[]) {
+        const reviews: Record<string, any> = {};
+        for (const file of payload) {
+            const prompt = `
+                You are an expert TypeScript code reviewer.
 
+                Review the following changes in the file "${file.filename}" and provide:
+                - A list of issues, improvements, or comments
+                - Focus on code quality, readability, bugs, and best practices
+                - Mention the line number (approximate) if possible
+
+                Respond in this JSON format:
+
+                {
+                "filename": "${file.filename}",
+                "comments": [
+                    { "line": 123, "comment": "Example comment here." }
+                ]
+                }
+
+                --- DIFF ---
+                \`\`\`diff
+                ${file.patch}
+                \`\`\`
+
+                --- PREVIOUS CODE ---
+                \`\`\`ts
+                ${file.previousCode}
+                \`\`\`
+
+                --- CURRENT CODE ---
+                \`\`\`ts
+                ${file.code}
+                \`\`\`
+                `;
+
+            try {
+                const result = await this.model.generateContent(prompt);
+                const text = result.response.text();
+
+                // Attempt to extract JSON if the model wraps the output in markdown
+                const match = text.match(/```json\n([\s\S]+?)```/);
+                const jsonText = match ? match[1] : text;
+
+                const parsed = JSON.parse(jsonText);
+                reviews[file.filename] = parsed.comments || [];
+            } catch (err) {
+                console.error(`Error reviewing ${file.filename}:`, err);
+                reviews[file.filename] = [{ line: 0, comment: 'Failed to process with AI.' }];
+            }
+        }
+
+        return reviews;
+
+    }
     async getReview(code: string): Promise<string> {
-        // console.log("code sent", code);
-
-        // const prompt = `
-        // You are a senior software architect and secure coding expert.
-
-        // Review the following code and provide a concise, actionable summary focusing on:
-        // 1. Bugs or logic errors
-        // 2. Performance or memory optimizations
-        // 3. Security issues (e.g., secrets, unsafe patterns)
-        // 4. Formatting/linting concerns
-        // 5. Idiomatic improvements
-
-        // Use bullet points. Be direct, only note issues worth fixing.
-
-        // \`\`\`
-        // ${code}
-        // \`\`\`
-        // `;
-        //     const prompt = `
-        //     You are a senior software architect and secure coding expert.
-
-        //     Review the following code and provide a concise, actionable summary focusing on:
-        //     1. Bugs or logic errors
-        //     2. Performance or memory optimizations
-        //     3. Security issues (e.g., secrets, unsafe patterns)
-        //     4. Formatting/linting concerns
-        //     5. Idiomatic improvements
-
-        //     Use bullet points. Be direct, only note issues worth fixing.
-
-        //     After listing the issues, provide the updated code with all the necessary corrections applied.
-
-        //     \`\`\`
-        //     ${code}
-        //     \`\`\`
-        // `;
-        //         const prompt = `
-        //     You are a senior software architect and secure coding expert.
-
-        //     Review the following code and provide a concise, actionable summary focusing on:
-        //     1. Bugs or logic errors
-        //     2. Performance or memory optimizations
-        //     3. Security issues (e.g., secrets, unsafe patterns)
-        //     4. Formatting/linting concerns
-        //     5. Idiomatic improvements
-
-        //     Use bullet points. Be direct, only note issues worth fixing.
-
-        //     Then, rewrite the code:
-        //     - Apply all necessary corrections based on your review
-        //     - Add clear and helpful comments so a project manager can understand the logic and copy-paste the code into documentation or tasks
-        //     - Ensure the final version is clean, readable, and production-ready
-
-        //     \`\`\`
-        //     ${code}
-        //     \`\`\`
-        // `;
+        
         const prompt = `
             You are a senior software architect and secure coding expert.
 

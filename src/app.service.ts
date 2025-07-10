@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CodeReviewService } from './code-review/code-review.service';
+import { GeminiService } from './ai/gemini.service';
 export interface GitHubPushEvent {
   ref: string;
   before: string;
@@ -53,12 +54,20 @@ export interface GitHubAuthor {
   email: string;
   username: string;
 }
+export interface ReviewPayloadItem {
+  filename: string;
+  status: 'modified' | 'added' | 'removed';
+  patch: string;
+  code: string;
+  previousCode: string;
+}
 
 @Injectable()
 export class AppService {
 
   constructor(
-    private readonly codeReviewService:CodeReviewService
+    private readonly codeReviewService:CodeReviewService,
+    private readonly geminiService:GeminiService
   ){}
 
   getHello(): string {
@@ -70,5 +79,8 @@ export class AppService {
     const { before , after } = data;
     const reviews=await this.codeReviewService.generateReview(before,after)
     console.log("Payload for Review",reviews);
+    const ouput=await this.geminiService.reviewWithGemini(reviews)
+    console.log("Ouput",JSON.stringify(ouput, null, 2));
+    
   }
 }
