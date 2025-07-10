@@ -1,4 +1,4 @@
-{
+const data={
   ref: 'refs/heads/main',
   before: '73294107f791eef82f74c1fdb9aae20205a5f8c8',  
   after: '6eb56c214253c7fd0664d4e84c84fe43e967191c',   

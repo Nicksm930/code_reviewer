@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { FileloggerService } from './filelogger/filelogger.service';
 import { FileLoggerInfo } from './filelogger/interfaces/file-logger.interface';
-import { AppService } from './app.service';
+import { AppService, GitHubPushEvent } from './app.service';
 
 @Controller('file')
 export class AppController {
@@ -42,7 +42,7 @@ export class AppController {
   }
 
   @Post('hooks')
-  getDataFromHook(@Body() body: any) {
+  getDataFromHook(@Body() body: GitHubPushEvent) {
     return this.appService.getDataFromHook(body);
   }
 }

@@ -4,6 +4,8 @@ import { AppService } from './app.service';
 import { FileloggerService } from './filelogger/filelogger.service';
 import { AiModule } from './ai/ai.module';
 import { ConfigModule } from '@nestjs/config';
+import { CodeReviewService } from './code-review/code-review.service';
+import { HttpModule } from '@nestjs/axios';
 
 
 @Module({
@@ -11,9 +13,10 @@ import { ConfigModule } from '@nestjs/config';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env'
-    })
+    }),
+    HttpModule
   ],
   controllers: [AppController],
-  providers: [AppService, FileloggerService],
+  providers: [AppService, FileloggerService, CodeReviewService],
 })
 export class AppModule { }
