@@ -5,4 +5,8 @@ export class AppService {
   getHello(): string {
     return 'Nikhil'
   }
+
+  getDataFromHook(data: any) {
+    console.log(data);
+  }
 }

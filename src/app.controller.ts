@@ -1,10 +1,14 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { FileloggerService } from './filelogger/filelogger.service';
 import { FileLoggerInfo } from './filelogger/interfaces/file-logger.interface';
+import { AppService } from './app.service';
 
 @Controller('file')
 export class AppController {
-  constructor(private readonly fileLoggerService: FileloggerService) { }
+  constructor(
+    private readonly fileLoggerService: FileloggerService,
+    private readonly appService:AppService
+  ) { }
 
   @Get('scan')
   async getAllFiles(): Promise<Record<string, FileLoggerInfo>> {
@@ -39,6 +43,6 @@ export class AppController {
 
   @Post('hooks')
   getDataFromHook(@Body() body: any) {
-    console.log("Body", body);
+    return this.appService.getDataFromHook(body);
   }
 }
