@@ -110,26 +110,24 @@ export class AppService {
     const repoOwner = repo.owner.login;
     const repoName = repo.name;
 
-    console.log(`🚀 PR #${prNumber} Opened: ${baseSha} → ${headSha}`);
-
-    // 1. Generate AI review based on the base/head diff
+    console.log(`--------------- PR #${prNumber} Opened: ${baseSha} → ${headSha} -----------------------`);
     const reviews = await this.codeReviewService.generateReview(baseSha, headSha);
-    console.log("✅ Reviews fetched:", reviews.map(f => f.filename));
-
-    // 2. Get AI suggestions from Gemini
+    // console.log("✅ Reviews fetched:", reviews.map(f => f.filename));
     const aiOutput = await this.geminiService.reviewWithGemini(reviews);
     const output = { [headSha]: aiOutput };
 
-    console.log("📦 Storing AI review in cache...");
+    console.log("------------------------Storing AI review in cache-----------------------");
     this.reviewCacheService.set(headSha, output);
+    console.log("--------------------Stored AI review in cache successfull-----------------------");
 
     // 3. Apply comments to GitHub PR
-    console.log("📝 Applying inline comments...");
+    console.log("----------------Applying inline comments-----------------------");
     await this.applyCommentsForPr(output, headSha, {
       repoOwner,
       repoName,
       prNumber
     });
+    console.log("--------------------Pr Comments Added Succesfully (Check Git)------------------->");
 
     return output;
   }

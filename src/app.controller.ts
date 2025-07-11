@@ -34,8 +34,6 @@ export class AppController {
   getReview(@Body() requestData: any): { summary: string } {
     const { filename, code } = requestData;
     console.log("Code", code);
-
-    // Mock analysis logic for now
     const summary = `✅ Received file: ${filename}\n🔍 Code length: ${code.length} characters\n💡 Suggestion: Check for typos like 'concole.log'`;
     return { summary };
   }
@@ -53,7 +51,7 @@ export class AppController {
 
   @Post('pr/hook')
   getDataFromPR(@Body() body: any):Promise<any> {
-    console.log("Pr Hook",body);
+    console.log("<-------------Pr Created--------------->",body);
     return this.appService.handlePullRequestOpened(body)
   }
 }

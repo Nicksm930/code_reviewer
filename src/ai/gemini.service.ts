@@ -22,11 +22,13 @@ export class GeminiService extends AiProvider {
         this.model = genAI.getGenerativeModel({ model: 'models/gemini-2.0-flash' })
     }
 
-  async reviewWithGemini(payload: ReviewPayloadItem[]) {
-  const reviews: Record<string, any> = {};
+    async reviewWithGemini(payload: ReviewPayloadItem[]) {
+        console.log("------------------Reviewing with Gemini --------------------------");
 
-  for (const file of payload) {
-    const prompt = `
+        const reviews: Record<string, any> = {};
+
+        for (const file of payload) {
+            const prompt = `
       You are an expert TypeScript code reviewer.
 
       Review the following changes in the file "${file.filename}" and provide:
@@ -58,53 +60,54 @@ export class GeminiService extends AiProvider {
       \`\`\`
     `;
 
-    try {
-      const result = await this.model.generateContent(prompt);
-      console.log("Log results",result);
-      
-      const text = await result.response.text();
+            try {
+                const result = await this.model.generateContent(prompt);
+                // console.log("Log results", result);
 
-      console.log("text",text);
-      
-      // Extract JSON from code block if present
-      const match = text.match(/```json\s*([\s\S]+?)```/i);
-      const jsonText = match ? match[1] : text;
+                const text = await result.response.text();
 
-      const parsed = this.safeJSONParse(jsonText);
-      console.log("parsed",parsed);
-      
-      if (parsed?.comments && Array.isArray(parsed.comments)) {
-        reviews[file.filename] = parsed.comments;
-        console.log("In True block",reviews,reviews[file.filename]);
-        
-      } else {
-        console.warn(`No comments found in AI output for ${file.filename}`);
-        reviews[file.filename] = [];
-      }
-    } catch (err) {
-      console.error(`Error reviewing ${file.filename}:`, err);
-      reviews[file.filename] = [
-        { line: 0, comment: "AI review failed or quota exceeded." },
-      ];
+                // console.log("text", text);
+
+                // Extract JSON from code block if present
+                const match = text.match(/```json\s*([\s\S]+?)```/i);
+                const jsonText = match ? match[1] : text;
+
+                const parsed = this.safeJSONParse(jsonText);
+                // console.log("parsed", parsed);
+
+                if (parsed?.comments && Array.isArray(parsed.comments)) {
+                    reviews[file.filename] = parsed.comments;
+                    // console.log("In True block", reviews, reviews[file.filename]);
+
+                } else {
+                    console.warn(`No comments found in AI output for ${file.filename}`);
+                    reviews[file.filename] = [];
+                }
+            } catch (err) {
+                console.error(`Error reviewing ${file.filename}:`, err);
+                reviews[file.filename] = [
+                    { line: 0, comment: "AI review failed or quota exceeded." },
+                ];
+            }
+        }
+        console.log("-------------------Review Generated-----------------------------");
+
+        return reviews;
     }
-  }
 
-  return reviews;
-}
+    safeJSONParse(str: string): any | null {
+        try {
+            console.log("In safe json", JSON.parse(str));
 
- safeJSONParse(str: string): any | null {
-  try {
-    console.log("In safe json",JSON.parse(str));
-    
-    return JSON.parse(str);
-  } catch (e) {
-    console.error("JSON parse error:", e.message);
-    return null;
-  }
-}
+            return JSON.parse(str);
+        } catch (e) {
+            console.error("JSON parse error:", e.message);
+            return null;
+        }
+    }
 
     async getReview(code: string): Promise<string> {
-        
+
         const prompt = `
             You are a senior software architect and secure coding expert.
 
