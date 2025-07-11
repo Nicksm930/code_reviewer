@@ -38,10 +38,10 @@ export class AppController {
     return { summary };
   }
 
-  @Post('hooks')
-  getDataFromHook(@Body() body: GitHubPushEvent): any {
-    return this.appService.getDataFromHook(body);
-  }
+  // @Post('hooks')
+  // getDataFromHook(@Body() body: GitHubPushEvent): any {
+  //   return this.appService.getDataFromHook(body);
+  // }
 
   @Get('git/commits/ai/reviews')
   getGitAiReview(): any {
@@ -50,8 +50,8 @@ export class AppController {
   }
 
   @Post('pr/hook')
-  getDataFromPR(@Body() body: any):Promise<any> {
-    console.log("<-------------Pr Created--------------->",body);
+  getDataFromPR(@Body() body: any): Promise<any> {
+    console.log("<-------------Pr Created (Test)--------------->", body);
     return this.appService.handlePullRequestOpened(body)
   }
 }

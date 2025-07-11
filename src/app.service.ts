@@ -116,7 +116,7 @@ export class AppService {
     const aiOutput = await this.geminiService.reviewWithGemini(reviews);
     const output = { [headSha]: aiOutput };
 
-    console.log("------------------------Storing AI review in cache-----------------------");
+    console.log("------------------------Sotoring AI review in cache-----------------------");
     this.reviewCacheService.set(headSha, output);
     console.log("--------------------Stored AI review in cache successfull-----------------------");
 
