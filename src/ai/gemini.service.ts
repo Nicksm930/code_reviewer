@@ -18,7 +18,7 @@ export class GeminiService extends AiProvider {
             throw new NotFoundException("Api key is undefined")
         }
         const genAI = new GoogleGenerativeAI(apiKey)
-        this.model = genAI.getGenerativeModel({ model: 'models/gemini-1.5-flash' })
+        this.model = genAI.getGenerativeModel({ model: 'models/gemini-2.0-flash' })
     }
 
     async reviewWithGemini(payload: ReviewPayloadItem[]) {

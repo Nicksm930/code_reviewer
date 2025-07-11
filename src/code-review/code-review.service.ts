@@ -10,7 +10,7 @@ export class CodeReviewService {
   private readonly REPO = 'code_reviewer';
   private readonly TOKEN = process.env.GITHUB_TOKEN;
 
-  constructor(private readonly httpService: HttpService) {}
+  constructor(private readonly httpService: HttpService) { }
 
   async generateReview(before: string, after: string) {
     const compareUrl = `${this.GITHUB_API}/repos/${this.OWNER}/${this.REPO}/compare/${before}...${after}`;
@@ -34,7 +34,7 @@ export class CodeReviewService {
         const code = await this.fetchFile(raw_url);
 
         // Fetch previous content (only for modified files)
-        let previousCode ;
+        let previousCode;
         if (status === 'modified') {
           previousCode = await this.fetchPreviousVersion(filename, before);
         }
