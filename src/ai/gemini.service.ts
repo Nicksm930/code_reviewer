@@ -3,6 +3,7 @@ import { AiProvider } from './ai.provider';
 import { ConfigService } from '@nestjs/config';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { ReviewPayloadItem } from 'src/app.service';
+import { log } from 'console';
 
 @Injectable()
 export class GeminiService extends AiProvider {
@@ -59,16 +60,23 @@ export class GeminiService extends AiProvider {
 
     try {
       const result = await this.model.generateContent(prompt);
+      console.log("Log results",result);
+      
       const text = await result.response.text();
 
+      console.log("text",text);
+      
       // Extract JSON from code block if present
       const match = text.match(/```json\s*([\s\S]+?)```/i);
       const jsonText = match ? match[1] : text;
 
       const parsed = this.safeJSONParse(jsonText);
-
+      console.log("parsed",parsed);
+      
       if (parsed?.comments && Array.isArray(parsed.comments)) {
         reviews[file.filename] = parsed.comments;
+        console.log("In True block",reviews,reviews[file.filename]);
+        
       } else {
         console.warn(`No comments found in AI output for ${file.filename}`);
         reviews[file.filename] = [];
@@ -86,6 +94,8 @@ export class GeminiService extends AiProvider {
 
  safeJSONParse(str: string): any | null {
   try {
+    console.log("In safe json",JSON.parse(str));
+    
     return JSON.parse(str);
   } catch (e) {
     console.error("JSON parse error:", e.message);
