@@ -31,7 +31,6 @@ export class AppController {
   }
 
   @Post('review')
-
   getReview(@Body() requestData: any): { summary: string } {
     const { filename, code } = requestData;
     console.log("Code", code);
@@ -49,7 +48,12 @@ export class AppController {
   @Get('git/commits/ai/reviews')
   getGitAiReview(): any {
     console.log("AI");
-
     return this.appService.getGitAiReview()
+  }
+
+  @Post('pr/hook')
+  getDataFromPR(@Body() body: any):Promise<any> {
+    console.log("Pr Hook",body);
+    return this.appService.handlePullRequestOpened(body)
   }
 }
