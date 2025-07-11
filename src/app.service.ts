@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CodeReviewService } from './code-review/code-review.service';
 import { GeminiService } from './ai/gemini.service';
+import { ReviewCacheService } from './review-cache/review-cache.service';
 export interface GitHubPushEvent {
   ref: string;
   before: string;
@@ -67,21 +68,27 @@ export class AppService {
 
   constructor(
     private readonly codeReviewService: CodeReviewService,
-    private readonly geminiService: GeminiService
+    private readonly geminiService: GeminiService,
+    private readonly reviewCacheService: ReviewCacheService
   ) { }
 
   getHello(): string {
     return 'Nikhil'
   }
 
-  async getDataFromHook(data: GitHubPushEvent) {
+  async getDataFromHook(data: GitHubPushEvent): Promise<any> {
     console.log("Data", data);
     const { before, after } = data;
     const reviews = await this.codeReviewService.generateReview(before, after)
     console.log("Payload for Review", reviews);
-    const ouput = await this.geminiService.reviewWithGemini(reviews)
-    console.log("Ouput", JSON.stringify(ouput, null, 2));
+    const output = await this.geminiService.reviewWithGemini(reviews)
+    console.log("Ouput", JSON.stringify(output, null, 2));
     console.log("New Commit removed");
+    this.reviewCacheService.set(after, output)
+    return output;
+  }
 
+  getGitAiReview():any{
+    return this.reviewCacheService.getAll()
   }
 }

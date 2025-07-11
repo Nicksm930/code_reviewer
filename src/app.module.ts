@@ -7,7 +7,7 @@ import { ConfigModule } from '@nestjs/config';
 import { CodeReviewService } from './code-review/code-review.service';
 import { HttpModule } from '@nestjs/axios';
 import { GeminiService } from './ai/gemini.service';
-
+import { ReviewCacheService } from './review-cache/review-cache.service';
 
 @Module({
   imports: [AiModule,
@@ -18,6 +18,6 @@ import { GeminiService } from './ai/gemini.service';
     HttpModule
   ],
   controllers: [AppController],
-  providers: [AppService, FileloggerService, CodeReviewService,GeminiService],
+  providers: [AppService, FileloggerService, CodeReviewService,GeminiService, ReviewCacheService],
 })
 export class AppModule { }

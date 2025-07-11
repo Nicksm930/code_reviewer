@@ -7,7 +7,7 @@ import { AppService, GitHubPushEvent } from './app.service';
 export class AppController {
   constructor(
     private readonly fileLoggerService: FileloggerService,
-    private readonly appService:AppService
+    private readonly appService: AppService
   ) { }
 
   @Get('scan')
@@ -42,7 +42,12 @@ export class AppController {
   }
 
   @Post('hooks')
-  getDataFromHook(@Body() body: GitHubPushEvent) {
+  getDataFromHook(@Body() body: GitHubPushEvent): any {
     return this.appService.getDataFromHook(body);
+  }
+
+  @Get('git/commits/ai/reviews')
+  getGitAiReview(): any {
+    return this.appService.getGitAiReview()
   }
 }
