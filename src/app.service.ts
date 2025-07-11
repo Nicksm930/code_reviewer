@@ -81,7 +81,7 @@ export class AppService {
     console.log("Payload for Review", reviews);
     const ouput = await this.geminiService.reviewWithGemini(reviews)
     console.log("Ouput", JSON.stringify(ouput, null, 2));
-    console.log("New Commit");
+    console.log("New Commit removed");
 
   }
 }
