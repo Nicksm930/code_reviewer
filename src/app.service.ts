@@ -114,10 +114,13 @@ export class AppService {
 
     // 1. Generate AI review based on the base/head diff
     const reviews = await this.codeReviewService.generateReview(baseSha, headSha);
-
+    console.log("Reviews",reviews);
+    
     // 2. Get AI suggestions from Gemini
     const output = await this.geminiService.reviewWithGemini(reviews);
 
+    console.log("before Storing");
+    
     // 3. Store review
     this.reviewCacheService.set(headSha, output);
 
