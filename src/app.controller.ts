@@ -50,8 +50,8 @@ export class AppController {
   }
 
   @Post('pr/hook')
-  getDataFromPR(@Body() body: any):Promise<any> {
-    console.log("<-------------Pr Created--------------->",body);
+  getDataFromPR(@Body() body: any): Promise<any> {
+    console.log("<-------------Pr Created (Test)--------------->", body);
     return this.appService.handlePullRequestOpened(body)
   }
 }
