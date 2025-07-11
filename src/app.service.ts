@@ -131,45 +131,53 @@ export class AppService {
     return output;
   }
   async applyCommentsForPr(
-    output: any,
-    commitId: string,
-    options: { repoOwner: string; repoName: string; prNumber: number }
-  ) {
-    const { repoOwner, repoName, prNumber } = options;
+  output: any,
+  commitId: string,
+  options: { repoOwner: string; repoName: string; prNumber: number }
+) {
+  const { repoOwner, repoName, prNumber } = options;
 
-    const prFiles = await this.octokit.pulls.listFiles({
-      owner: repoOwner,
-      repo: repoName,
-      pull_number: prNumber
-    });
+  const prFiles = await this.octokit.pulls.listFiles({
+    owner: repoOwner,
+    repo: repoName,
+    pull_number: prNumber
+  });
 
-    const files = prFiles.data;
+  const files = prFiles.data;
 
-    for (const [filePath, comments] of Object.entries(output[commitId] as Record<string, ReviewComment[]>)) {
-      const prFile = files.find((f) => f.filename === filePath);
-      if (!prFile || !prFile.patch) continue;
+  const commitComments = output?.[commitId];
+  if (!commitComments || typeof commitComments !== 'object') {
+    console.warn(`No review comments found for commit: ${commitId}`);
+    return;
+  }
 
-      const diffLines = prFile.patch.split('\n');
-      if (!comments || typeof comments !== 'object') {
-        console.error('Invalid comments object:', comments);
-        return;
-      }
-      for (const { line, comment } of comments) {
-        const position = this.mapLineToDiffPosition(diffLines, line);
-        if (position === -1) continue;
+  for (const [filePath, comments] of Object.entries(commitComments as Record<string, ReviewComment[]>)) {
+    const prFile = files.find((f) => f.filename === filePath);
+    if (!prFile || !prFile.patch) continue;
 
-        await this.octokit.pulls.createReviewComment({
-          owner: repoOwner,
-          repo: repoName,
-          pull_number: prNumber,
-          commit_id: commitId,
-          path: filePath,
-          position,
-          body: comment
-        });
-      }
+    const diffLines = prFile.patch.split('\n');
+    if (!Array.isArray(comments)) {
+      console.error(`Invalid comments format for ${filePath}:`, comments);
+      continue;
+    }
+
+    for (const { line, comment } of comments) {
+      const position = this.mapLineToDiffPosition(diffLines, line);
+      if (position === -1) continue;
+
+      await this.octokit.pulls.createReviewComment({
+        owner: repoOwner,
+        repo: repoName,
+        pull_number: prNumber,
+        commit_id: commitId,
+        path: filePath,
+        position,
+        body: comment
+      });
     }
   }
+}
+
 
   mapLineToDiffPosition(diffLines: string[], targetLine: number): number {
     let position = 0;
