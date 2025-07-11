@@ -48,6 +48,8 @@ export class AppController {
 
   @Get('git/commits/ai/reviews')
   getGitAiReview(): any {
+    console.log("AI");
+
     return this.appService.getGitAiReview()
   }
 }
