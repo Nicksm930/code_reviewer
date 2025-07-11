@@ -66,21 +66,22 @@ export interface ReviewPayloadItem {
 export class AppService {
 
   constructor(
-    private readonly codeReviewService:CodeReviewService,
-    private readonly geminiService:GeminiService
-  ){}
+    private readonly codeReviewService: CodeReviewService,
+    private readonly geminiService: GeminiService
+  ) { }
 
   getHello(): string {
     return 'Nikhil'
   }
 
   async getDataFromHook(data: GitHubPushEvent) {
-    console.log("Data",data);
-    const { before , after } = data;
-    const reviews=await this.codeReviewService.generateReview(before,after)
-    console.log("Payload for Review",reviews);
-    const ouput=await this.geminiService.reviewWithGemini(reviews)
-    console.log("Ouput",JSON.stringify(ouput, null, 2));
-    
+    console.log("Data", data);
+    const { before, after } = data;
+    const reviews = await this.codeReviewService.generateReview(before, after)
+    console.log("Payload for Review", reviews);
+    const ouput = await this.geminiService.reviewWithGemini(reviews)
+    console.log("Ouput", JSON.stringify(ouput, null, 2));
+    console.log("New Commit");
+
   }
 }
