@@ -18,64 +18,81 @@ export class GeminiService extends AiProvider {
             throw new NotFoundException("Api key is undefined")
         }
         const genAI = new GoogleGenerativeAI(apiKey)
-        this.model = genAI.getGenerativeModel({ model: 'models/gemini-1.5-flash' })
+        this.model = genAI.getGenerativeModel({ model: 'models/gemini-2.0-flash' })
     }
 
-    async reviewWithGemini(payload: ReviewPayloadItem[]) {
-        const reviews: Record<string, any> = {};
-        for (const file of payload) {
-            const prompt = `
-                You are an expert TypeScript code reviewer.
+  async reviewWithGemini(payload: ReviewPayloadItem[]) {
+  const reviews: Record<string, any> = {};
 
-                Review the following changes in the file "${file.filename}" and provide:
-                - A list of issues, improvements, or comments
-                - Focus on code quality, readability, bugs, and best practices
-                - Mention the line number (approximate) if possible
+  for (const file of payload) {
+    const prompt = `
+      You are an expert TypeScript code reviewer.
 
-                Respond in this JSON format:
+      Review the following changes in the file "${file.filename}" and provide:
+      - A list of issues, improvements, or comments
+      - Focus on code quality, readability, bugs, and best practices
+      - Mention the line number (approximate) if possible
 
-                {
-                "filename": "${file.filename}",
-                "comments": [
-                    { "line": 123, "comment": "Example comment here." }
-                ]
-                }
+      Respond ONLY in this JSON format:
+      {
+        "filename": "${file.filename}",
+        "comments": [
+          { "line": 123, "comment": "Example comment here." }
+        ]
+      }
 
-                --- DIFF ---
-                \`\`\`diff
-                ${file.patch}
-                \`\`\`
+      --- DIFF ---
+      \`\`\`diff
+      ${file.patch}
+      \`\`\`
 
-                --- PREVIOUS CODE ---
-                \`\`\`ts
-                ${file.previousCode}
-                \`\`\`
+      --- PREVIOUS CODE ---
+      \`\`\`ts
+      ${file.previousCode}
+      \`\`\`
 
-                --- CURRENT CODE ---
-                \`\`\`ts
-                ${file.code}
-                \`\`\`
-                `;
+      --- CURRENT CODE ---
+      \`\`\`ts
+      ${file.code}
+      \`\`\`
+    `;
 
-            try {
-                const result = await this.model.generateContent(prompt);
-                const text = result.response.text();
+    try {
+      const result = await this.model.generateContent(prompt);
+      const text = await result.response.text();
 
-                // Attempt to extract JSON if the model wraps the output in markdown
-                const match = text.match(/```json\n([\s\S]+?)```/);
-                const jsonText = match ? match[1] : text;
+      // Extract JSON from code block if present
+      const match = text.match(/```json\s*([\s\S]+?)```/i);
+      const jsonText = match ? match[1] : text;
 
-                const parsed = JSON.parse(jsonText);
-                reviews[file.filename] = parsed.comments || [];
-            } catch (err) {
-                console.error(`Error reviewing ${file.filename}:`, err);
-                reviews[file.filename] = [{ line: 0, comment: 'Failed to process with AI.' }];
-            }
-        }
+      const parsed = this.safeJSONParse(jsonText);
 
-        return reviews;
-
+      if (parsed?.comments && Array.isArray(parsed.comments)) {
+        reviews[file.filename] = parsed.comments;
+      } else {
+        console.warn(`No comments found in AI output for ${file.filename}`);
+        reviews[file.filename] = [];
+      }
+    } catch (err) {
+      console.error(`Error reviewing ${file.filename}:`, err);
+      reviews[file.filename] = [
+        { line: 0, comment: "AI review failed or quota exceeded." },
+      ];
     }
+  }
+
+  return reviews;
+}
+
+ safeJSONParse(str: string): any | null {
+  try {
+    return JSON.parse(str);
+  } catch (e) {
+    console.error("JSON parse error:", e.message);
+    return null;
+  }
+}
+
     async getReview(code: string): Promise<string> {
         
         const prompt = `

@@ -76,10 +76,10 @@ export class AppService {
     private readonly codeReviewService: CodeReviewService,
     private readonly geminiService: GeminiService,
     private readonly reviewCacheService: ReviewCacheService,
-    private readonly githubService:GithubService
+    private readonly githubService: GithubService
   ) {
-    this.octokit=this.githubService.getOctokit();
-   }
+    this.octokit = this.githubService.getOctokit();
+  }
 
   getHello(): string {
     return 'Nikhil'
@@ -97,40 +97,43 @@ export class AppService {
     return output;
   }
 
-  getGitAiReview():any{
+  getGitAiReview(): any {
     return this.reviewCacheService.getAll()
   }
 
   async handlePullRequestOpened(payload: any): Promise<any> {
-  const pr = payload.pull_request;
-  const repo = payload.repository;
-  const baseSha = pr.base.sha;
-  const headSha = pr.head.sha;
-  const prNumber = pr.number;
-  const repoOwner = repo.owner.login;
-  const repoName = repo.name;
+    const pr = payload.pull_request;
+    const repo = payload.repository;
+    const baseSha = pr.base.sha;
+    const headSha = pr.head.sha;
+    const prNumber = pr.number;
+    const repoOwner = repo.owner.login;
+    const repoName = repo.name;
 
-  console.log(`🚀 PR #${prNumber} Opened: ${baseSha} → ${headSha}`);
+    console.log(`🚀 PR #${prNumber} Opened: ${baseSha} → ${headSha}`);
 
-  // 1. Generate AI review based on the base/head diff
-  const reviews = await this.codeReviewService.generateReview(baseSha, headSha);
+    // 1. Generate AI review based on the base/head diff
+    const reviews = await this.codeReviewService.generateReview(baseSha, headSha);
+    console.log("Reviews",reviews);
+    
+    // 2. Get AI suggestions from Gemini
+    const output = await this.geminiService.reviewWithGemini(reviews);
 
-  // 2. Get AI suggestions from Gemini
-  const output = await this.geminiService.reviewWithGemini(reviews);
+    console.log("before Storing");
+    
+    // 3. Store review
+    this.reviewCacheService.set(headSha, output);
 
-  // 3. Store review
-  this.reviewCacheService.set(headSha, output);
+    // 4. Apply comments to GitHub PR
+    await this.applyCommentsForPr(output, headSha, {
+      repoOwner,
+      repoName,
+      prNumber
+    });
 
-  // 4. Apply comments to GitHub PR
-  await this.applyCommentsForPr(output, headSha, {
-    repoOwner,
-    repoName,
-    prNumber
-  });
-
-  return output;
-}
-async applyCommentsForPr(
+    return output;
+  }
+  async applyCommentsForPr(
   output: any,
   commitId: string,
   options: { repoOwner: string; repoName: string; prNumber: number }
@@ -145,11 +148,21 @@ async applyCommentsForPr(
 
   const files = prFiles.data;
 
-  for (const [filePath, comments] of Object.entries(output[commitId] as Record<string, ReviewComment[]>)) {
+  const commitComments = output?.[commitId];
+  if (!commitComments || typeof commitComments !== 'object') {
+    console.warn(`No review comments found for commit: ${commitId}`);
+    return;
+  }
+
+  for (const [filePath, comments] of Object.entries(commitComments as Record<string, ReviewComment[]>)) {
     const prFile = files.find((f) => f.filename === filePath);
     if (!prFile || !prFile.patch) continue;
 
     const diffLines = prFile.patch.split('\n');
+    if (!Array.isArray(comments)) {
+      console.error(`Invalid comments format for ${filePath}:`, comments);
+      continue;
+    }
 
     for (const { line, comment } of comments) {
       const position = this.mapLineToDiffPosition(diffLines, line);
@@ -168,23 +181,24 @@ async applyCommentsForPr(
   }
 }
 
-mapLineToDiffPosition(diffLines: string[], targetLine: number): number {
-  let position = 0;
-  let currentLine = 0;
 
-  for (const line of diffLines) {
-    if (line.startsWith('+') && !line.startsWith('+++')) {
-      currentLine++;
+  mapLineToDiffPosition(diffLines: string[], targetLine: number): number {
+    let position = 0;
+    let currentLine = 0;
+
+    for (const line of diffLines) {
+      if (line.startsWith('+') && !line.startsWith('+++')) {
+        currentLine++;
+      }
+
+      if (currentLine === targetLine) {
+        return position;
+      }
+
+      position++;
     }
 
-    if (currentLine === targetLine) {
-      return position;
-    }
-
-    position++;
+    return -1; // not found
   }
-
-  return -1; // not found
-}
 
 }
