@@ -97,7 +97,7 @@ export class GeminiService extends AiProvider {
 
     safeJSONParse(str: string): any | null {
         try {
-            console.log("In safe json", JSON.parse(str));
+            // console.log("In safe json", JSON.parse(str));
 
             return JSON.parse(str);
         } catch (e) {
