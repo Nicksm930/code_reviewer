@@ -13,6 +13,8 @@ export class CodeReviewService {
   constructor(private readonly httpService: HttpService) { }
 
   async generateReview(before: string, after: string) {
+    console.log("-------------------Generating Data for Review Based on Diffs------------------");
+
     const compareUrl = `${this.GITHUB_API}/repos/${this.OWNER}/${this.REPO}/compare/${before}...${after}`;
 
     const headers = {
@@ -29,11 +31,7 @@ export class CodeReviewService {
     const reviewData = await Promise.all(
       files.map(async (file: any) => {
         const { filename, status, patch, raw_url } = file;
-
-        // Fetch current content
         const code = await this.fetchFile(raw_url);
-
-        // Fetch previous content (only for modified files)
         let previousCode;
         if (status === 'modified') {
           previousCode = await this.fetchPreviousVersion(filename, before);
@@ -48,7 +46,7 @@ export class CodeReviewService {
         };
       })
     );
-
+    console.log("-------------------Generated Review Data Based on Diffs------------------");
     return reviewData;
   }
 
