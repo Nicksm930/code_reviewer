@@ -38,10 +38,10 @@ export class AppController {
     return { summary };
   }
 
-  @Post('hooks')
-  getDataFromHook(@Body() body: GitHubPushEvent): any {
-    return this.appService.getDataFromHook(body);
-  }
+  // @Post('hooks')
+  // getDataFromHook(@Body() body: GitHubPushEvent): any {
+  //   return this.appService.getDataFromHook(body);
+  // }
 
   @Get('git/commits/ai/reviews')
   getGitAiReview(): any {
