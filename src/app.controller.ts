@@ -49,9 +49,25 @@ export class AppController {
     return this.appService.getGitAiReview()
   }
 
+  // @Post('pr/hook')
+  // getDataFromPR(@Body() body: any): Promise<any> {
+  //   console.log("<-------------Pr Created (Test)--------------->", body);
+  //   return this.appService.handlePullRequestOpened(body)
+  // }
+
   @Post('pr/hook')
   getDataFromPR(@Body() body: any): Promise<any> {
-    console.log("<-------------Pr Created (Test)--------------->", body);
-    return this.appService.handlePullRequestOpened(body)
+    const sender = body?.sender?.login;
+    const action = body?.action;
+    if (sender === 'your-app-name[bot]') {
+      return Promise.resolve({ ignored: true });
+    }
+    if (!['opened', 'synchronize'].includes(action)) {
+      return Promise.resolve({ ignored: true });
+    }
+    console.log(`<------------- PR ${action.toUpperCase()} Triggered --------------->`);
+    return this.appService.handlePullRequestOpened(body);
   }
+
+
 }
