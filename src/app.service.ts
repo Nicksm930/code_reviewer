@@ -86,13 +86,13 @@ export class AppService {
   }
 
   async getDataFromHook(data: GitHubPushEvent): Promise<any> {
-    console.log("Data", data);
+    // console.log("Data", data);
     const { before, after } = data;
     const reviews = await this.codeReviewService.generateReview(before, after)
-    console.log("Payload for Review", reviews);
+    // console.log("Payload for Review", reviews);
     const output = await this.geminiService.reviewWithGemini(reviews)
-    console.log("Ouput", JSON.stringify(output, null, 2));
-    console.log("New Commit removed");
+    // console.log("Ouput", JSON.stringify(output, null, 2));
+    // console.log("New Commit removed");
     this.reviewCacheService.set(after, output)
     return output;
   }

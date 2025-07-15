@@ -13,7 +13,7 @@ export class GeminiService extends AiProvider {
     ) {
         super();
         const apiKey = this.configService.get<string>('GEMINI_API_KEY');
-        console.log("API KEY", apiKey);
+        // console.log("API KEY", apiKey);
 
         if (!apiKey) {
             throw new NotFoundException("Api key is undefined")
