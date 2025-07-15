@@ -82,7 +82,7 @@ export class AppService {
   }
 
   getHello(): string {
-    return 'Nikhil'
+    return 'Nikhil More'
   }
 
   async getDataFromHook(data: GitHubPushEvent): Promise<any> {
