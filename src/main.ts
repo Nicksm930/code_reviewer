@@ -3,6 +3,8 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
+  console.log("Hello World");
+  
   const app = await NestFactory.create(AppModule);
   const config = new DocumentBuilder()
     .setTitle("Code_Reviewers API")

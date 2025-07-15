@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post ,Headers } from '@nestjs/common';
 import { FileloggerService } from './filelogger/filelogger.service';
 import { FileLoggerInfo } from './filelogger/interfaces/file-logger.interface';
 import { AppService, GitHubPushEvent } from './app.service';
@@ -55,19 +55,50 @@ export class AppController {
   //   return this.appService.handlePullRequestOpened(body)
   // }
 
+  // @Post('pr/hook')
+  // getDataFromPR(@Body() body: any): Promise<any> {
+  //   const sender = body?.sender?.login;
+  //   const action = body?.action;
+  //   if (sender === 'ai-reviewer-gm[bot]') {
+  //     return Promise.resolve({ ignored: true });
+  //   }
+  //   if (!['opened', 'synchronize'].includes(action)) {
+  //     return Promise.resolve({ ignored: true });
+  //   }
+  //   console.log(`<------------- PR ${action.toUpperCase()} Triggered --------------->`);
+  //   return this.appService.handlePullRequestOpened(body);
+  // }
   @Post('pr/hook')
-  getDataFromPR(@Body() body: any): Promise<any> {
-    const sender = body?.sender?.login;
-    const action = body?.action;
-    if (sender === 'your-app-name[bot]') {
-      return Promise.resolve({ ignored: true });
-    }
-    if (!['opened', 'synchronize'].includes(action)) {
-      return Promise.resolve({ ignored: true });
-    }
-    console.log(`<------------- PR ${action.toUpperCase()} Triggered --------------->`);
-    return this.appService.handlePullRequestOpened(body);
+getDataFromPR(
+  @Headers('x-github-event') event: string,
+  @Body() body: any,
+): Promise<any> {
+  const sender = body?.sender?.login;
+  const action = body?.action;
+
+  // 🛑 Ignore non-pull_request events
+  if (event !== 'pull_request') {
+    console.log(`❌ Ignoring non-PR event: ${event}`);
+    return Promise.resolve({ ignored: true, reason: 'not a pull_request event' });
   }
 
+  // 🔁 Prevent infinite loop from bot comments
+  if (sender === 'ai-reviewer-gm[bot]') {
+    console.log('🔁 Skipping bot-triggered event');
+    return Promise.resolve({ ignored: true, reason: 'bot-triggered event' });
+  }
+
+  // ⛔ Skip actions we're not interested in
+  if (!['opened', 'synchronize'].includes(action)) {
+    console.log(`ℹ️ Skipping unsupported PR action: ${action}`);
+    return Promise.resolve({ ignored: true, reason: 'unsupported action' });
+  }
+
+  console.log(`<------------- PR ${action.toUpperCase()} Triggered --------------->`);
+  return this.appService.handlePullRequestOpened(body);
+}
+
+
+  
 
 }
