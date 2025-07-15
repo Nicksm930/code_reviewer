@@ -10,6 +10,8 @@ import { GeminiService } from './ai/gemini.service';
 import { ReviewCacheService } from './review-cache/review-cache.service';
 import { GithubService } from './github/github.service';
 import { GithubModule } from './github/github.module';
+import { GithubAppService } from './github-app/github-app.service';
+
 
 @Module({
   imports: [AiModule,
@@ -21,6 +23,6 @@ import { GithubModule } from './github/github.module';
     GithubModule
   ],
   controllers: [AppController],
-  providers: [AppService, FileloggerService, CodeReviewService,GeminiService, ReviewCacheService, GithubService],
+  providers: [AppService, FileloggerService, CodeReviewService,GeminiService, ReviewCacheService, GithubService, GithubAppService],
 })
 export class AppModule { }

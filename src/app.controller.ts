@@ -33,7 +33,7 @@ export class AppController {
   @Post('review')
   getReview(@Body() requestData: any): { summary: string } {
     const { filename, code } = requestData;
-    console.log("Code", code);
+    // console.log("Code", code);
     const summary = `✅ Received file: ${filename}\n🔍 Code length: ${code.length} characters\n💡 Suggestion: Check for typos like 'concole.log'`;
     return { summary };
   }
@@ -45,13 +45,29 @@ export class AppController {
 
   @Get('git/commits/ai/reviews')
   getGitAiReview(): any {
-    console.log("AI");
+    // console.log("AI");
     return this.appService.getGitAiReview()
   }
 
+  // @Post('pr/hook')
+  // getDataFromPR(@Body() body: any): Promise<any> {
+  //   console.log("<-------------Pr Created (Test)--------------->", body);
+  //   return this.appService.handlePullRequestOpened(body)
+  // }
+
   @Post('pr/hook')
   getDataFromPR(@Body() body: any): Promise<any> {
-    console.log("<-------------Pr Created (Test)--------------->", body);
-    return this.appService.handlePullRequestOpened(body)
+    const sender = body?.sender?.login;
+    const action = body?.action;
+    if (sender === 'your-app-name[bot]') {
+      return Promise.resolve({ ignored: true });
+    }
+    if (!['opened', 'synchronize'].includes(action)) {
+      return Promise.resolve({ ignored: true });
+    }
+    console.log(`<------------- PR ${action.toUpperCase()} Triggered --------------->`);
+    return this.appService.handlePullRequestOpened(body);
   }
+
+
 }
