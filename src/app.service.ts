@@ -4,6 +4,7 @@ import { GeminiService } from './ai/gemini.service';
 import { ReviewCacheService } from './review-cache/review-cache.service';
 import { Octokit } from '@octokit/rest';
 import { GithubService } from './github/github.service';
+import { GithubAppService } from './github-app/github-app.service';
 export interface GitHubPushEvent {
   ref: string;
   before: string;
@@ -76,7 +77,8 @@ export class AppService {
     private readonly codeReviewService: CodeReviewService,
     private readonly geminiService: GeminiService,
     private readonly reviewCacheService: ReviewCacheService,
-    private readonly githubService: GithubService
+    private readonly githubService: GithubService,
+    private readonly githubAppService: GithubAppService
   ) {
     this.octokit = this.githubService.getOctokit();
   }
@@ -86,7 +88,7 @@ export class AppService {
   }
 
   async getDataFromHook(data: GitHubPushEvent): Promise<any> {
-    // console.log("Data", data);
+    console.log("Data", data);
     const { before, after } = data;
     const reviews = await this.codeReviewService.generateReview(before, after)
     // console.log("Payload for Review", reviews);
@@ -132,6 +134,53 @@ export class AppService {
     return output;
   }
 
+  // async applyCommentsForPr(
+  //   output: any,
+  //   commitId: string,
+  //   options: { repoOwner: string; repoName: string; prNumber: number }
+  // ) {
+  //   const { repoOwner, repoName, prNumber } = options;
+
+  //   const prFiles = await this.octokit.pulls.listFiles({
+  //     owner: repoOwner,
+  //     repo: repoName,
+  //     pull_number: prNumber
+  //   });
+
+  //   const files = prFiles.data;
+  //   const commitComments = output?.[commitId];
+
+  //   if (!commitComments || typeof commitComments !== 'object') {
+  //     console.warn(`⚠️ No review comments found for commit: ${commitId}`);
+  //     return;
+  //   }
+
+  //   for (const [filePath, comments] of Object.entries(commitComments as Record<string, ReviewComment[]>)) {
+  //     const prFile = files.find(f => f.filename === filePath);
+  //     if (!prFile || !prFile.patch) continue;
+
+  //     const diffLines = prFile.patch.split('\n');
+  //     if (!Array.isArray(comments)) {
+  //       console.error(`Invalid comments format for ${filePath}:`, comments);
+  //       continue;
+  //     }
+
+  //     for (const { line, comment } of comments) {
+  //       const position = this.mapLineToDiffPosition(diffLines, line);
+  //       if (position === -1) continue;
+
+  //       await this.octokit.pulls.createReviewComment({
+  //         owner: repoOwner,
+  //         repo: repoName,
+  //         pull_number: prNumber,
+  //         commit_id: commitId,
+  //         path: filePath,
+  //         position,
+  //         body: comment
+  //       });
+  //     }
+  //   }
+  // }
   async applyCommentsForPr(
     output: any,
     commitId: string,
@@ -139,7 +188,9 @@ export class AppService {
   ) {
     const { repoOwner, repoName, prNumber } = options;
 
-    const prFiles = await this.octokit.pulls.listFiles({
+    const octokit = await this.githubAppService.getInstallationOctokit(repoOwner);
+
+    const prFiles = await octokit.pulls.listFiles({
       owner: repoOwner,
       repo: repoName,
       pull_number: prNumber
@@ -167,7 +218,7 @@ export class AppService {
         const position = this.mapLineToDiffPosition(diffLines, line);
         if (position === -1) continue;
 
-        await this.octokit.pulls.createReviewComment({
+        await octokit.pulls.createReviewComment({
           owner: repoOwner,
           repo: repoName,
           pull_number: prNumber,
@@ -179,6 +230,7 @@ export class AppService {
       }
     }
   }
+
 
 
 
