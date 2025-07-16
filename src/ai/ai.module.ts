@@ -7,6 +7,7 @@ import { CustomloggerService } from 'src/customlogger/customlogger.service';
 
 
 @Module({
+
   controllers: [AiController],
   providers: [AiService, {
     provide: AiProvider,

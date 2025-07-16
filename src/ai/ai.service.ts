@@ -5,4 +5,5 @@ import { Injectable } from '@nestjs/common';
 export class AiService {
     constructor() {
     }
+
 }
