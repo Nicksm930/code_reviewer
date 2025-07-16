@@ -26,11 +26,62 @@ export class GeminiService extends AiProvider {
         this.customLogger.log(`Started Reviewing with Gemini-Flash-2.0`);
 
         const reviews: Record<string, any> = {};
+        const extensionToLanguageMap: Record<string, string> = {
+            // JavaScript/TypeScript
+            js: 'javascript',
+            jsx: 'jsx',
+            ts: 'typescript',
+            tsx: 'tsx',
+
+            // Web / HTML / CSS
+            html: 'html',
+            css: 'css',
+            scss: 'scss',
+            less: 'less',
+
+            // JSON/YAML
+            json: 'json',
+            yml: 'yaml',
+            yaml: 'yaml',
+
+            // Backend / Server
+            py: 'python',
+            java: 'java',
+            c: 'c',
+            cpp: 'cpp',
+            cs: 'csharp',
+            go: 'go',
+            php: 'php',
+            rb: 'ruby',
+            rs: 'rust',
+
+            // Shell / Config
+            sh: 'bash',
+            bash: 'bash',
+            zsh: 'bash',
+            env: 'dotenv',
+            toml: 'toml',
+            ini: 'ini',
+            dockerfile: 'docker',
+
+            // Infra / DevOps
+            tf: 'hcl',         // Terraform
+            md: 'markdown',
+
+            // Misc
+            sql: 'sql',
+            xml: 'xml',
+            txt: 'text',
+            log: 'text',
+        };
+
 
         await Promise.all(
             payload.map(async (file) => {
+                const ext = file.filename.split('.').pop()?.toLowerCase() || '';
+                const language = extensionToLanguageMap[ext] || 'plaintext';
                 const prompt = `
-            You are an expert TypeScript code reviewer tasked with reviewing and auditing the code in a provided file. Your goal is to identify issues, suggest improvements, and provide comments on code quality, readability, potential bugs, and best practices according to TypeScript and relevant frameworks.
+            You are an expert ${language} code reviewer tasked with reviewing and auditing the code in a provided file. Your goal is to identify issues, suggest improvements, and provide comments on code quality, readability, potential bugs, and best practices according to TypeScript and relevant frameworks.
 
             You will be given the following information:
             1. The filename
@@ -59,7 +110,7 @@ export class GeminiService extends AiProvider {
 
             Current code:
             <current_code>
-            \`\`\`ts
+            \`\`\`${ext}
             ${file.code}
             \`\`\`
             </current_code>
