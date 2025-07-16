@@ -101,6 +101,7 @@ export class AppService {
     return this.reviewCacheService.getAll()
   }
 
+
   async handlePullRequestOpened(payload: any): Promise<any> {
     const pr = payload.pull_request;
     const repo = payload.repository;
@@ -109,6 +110,7 @@ export class AppService {
     const prNumber = pr.number;
     const repoOwner = repo.owner.login;
     const repoName = repo.name;
+
 
     this.customLogger.debug(`function(handlePullRequestOpened) => PR #${prNumber} Opened: ${baseSha} → ${headSha}`)
     const reviews = await this.codeReviewService.generateReview(baseSha, headSha);

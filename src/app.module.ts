@@ -14,6 +14,7 @@ import { GithubAppService } from './github-app/github-app.service';
 import { CustomloggerService } from './customlogger/customlogger.service';
 
 
+
 @Module({
   imports: [AiModule,
     ConfigModule.forRoot({
@@ -24,6 +25,6 @@ import { CustomloggerService } from './customlogger/customlogger.service';
     GithubModule
   ],
   controllers: [AppController],
-  providers: [AppService, FileloggerService, CodeReviewService,GeminiService, ReviewCacheService, GithubService, GithubAppService, CustomloggerService],
+  providers: [AppService, FileloggerService, CodeReviewService, GeminiService, ReviewCacheService, GithubService, GithubAppService, CustomloggerService],
 })
 export class AppModule { }
