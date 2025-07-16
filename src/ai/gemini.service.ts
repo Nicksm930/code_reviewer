@@ -29,36 +29,96 @@ export class GeminiService extends AiProvider {
 
         for (const file of payload) {
             const prompt = `
-      You are an expert TypeScript code reviewer.
+                    You are an expert TypeScript code reviewer tasked with reviewing and auditing the code in a provided file. Your goal is to identify issues, suggest improvements, and provide comments on code quality, readability, potential bugs, and best practices according to TypeScript and relevant frameworks.
 
-      Review the following changes in the file "${file.filename}" and provide:
-      - A list of issues, improvements, or comments
-      - Focus on code quality, readability, bugs, and best practices
-      - Mention the line number (approximate) if possible
+                    You will be given the following information:
+                    1. The filename
+                    2. A diff of the changes
+                    3. The previous version of the code
+                    4. The current version of the code
 
-      Respond ONLY in this JSON format:
-      {
-        "filename": "${file.filename}",
-        "comments": [
-          { "line": 123, "comment": "Example comment here." }
-        ]
-      }
+                    Here is the file information:
 
-      --- DIFF ---
-      \`\`\`diff
-      ${file.patch}
-      \`\`\`
+                    <filename>${file.filename}</filename>
 
-      --- PREVIOUS CODE ---
-      \`\`\`ts
-      ${file.previousCode}
-      \`\`\`
+                    Review the following changes:
 
-      --- CURRENT CODE ---
-      \`\`\`ts
-      ${file.code}
-      \`\`\`
-    `;
+                    <diff>
+                    \`\`\`diff
+                    ${file.patch}
+                    \`\`\`
+                    </diff>
+
+                    Previous code:
+                    <previous_code>
+                    \`\`\`ts
+                    ${file.previousCode}
+                    \`\`\`
+                    </previous_code>
+
+                    Current code:
+                    <current_code>
+                    \`\`\`ts
+                    ${file.code}
+                    \`\`\`
+                    </current_code>
+
+                    Instructions for reviewing the code:
+                    1. Carefully examine the diff, previous code, and current code.
+                    2. Identify any issues, potential improvements, or noteworthy aspects of the code.
+                    3. Focus on:
+                    - Code quality
+                    - Readability
+                    - Potential bugs
+                    - Adherence to TypeScript best practices
+                    - Proper use of relevant frameworks (if applicable)
+                    4. For each comment, try to provide the approximate line number where the issue or improvement is located.
+                    5. Be specific and constructive in your feedback.
+
+                    Provide your review in the following JSON format:
+                    <output_format>
+                    {
+                    "filename": "The name of the file",
+                    "comments": [
+                        { "line": 123, "comment": "Your comment here." }
+                    ]
+                    }
+                    </output_format>
+
+                    Your final output should consist of only the JSON object containing the filename and comments. Do not include any additional text, explanations, or formatting outside of this JSON structure.
+                    `;
+
+            //         const prompt = ` You are an expert TypeScript code reviewer tasked with reviewing ,auditing the code in the provided file. 
+            //     Review the following changes in the file "${file.filename}" and provide:
+            //   - A list of issues, improvements, or comments wherever necessary .
+            //   - Focus on code quality, readability, bugs, and best practices  according to the frameworks
+            //   - Mention the line number (approximate) if possible
+
+
+            //   Respond ONLY in this JSON format:
+            //   {
+            //     "filename": "${file.filename}",
+            //     "comments": [
+            //       { "line": 123, "comment": "Example comment here." }
+            //     ]
+            //   }
+
+            //   --- DIFF ---
+            //   \`\`\`diff
+            //   ${file.patch}
+            //   \`\`\`
+
+            //   --- PREVIOUS CODE ---
+            //   \`\`\`ts
+            //   ${file.previousCode}
+            //   \`\`\`
+
+            //   --- CURRENT CODE ---
+            //   \`\`\`ts
+            //   ${file.code}
+            //   \`\`\`
+
+            //         `;
 
             try {
                 const result = await this.model.generateContent(prompt);
