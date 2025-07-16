@@ -20,6 +20,7 @@ export class GeminiService extends AiProvider {
         }
         const genAI = new GoogleGenerativeAI(apiKey)
         this.model = genAI.getGenerativeModel({ model: 'models/gemini-2.0-flash' })
+
     }
 
     async reviewWithGemini(payload: ReviewPayloadItem[]) {
@@ -188,10 +189,59 @@ export class GeminiService extends AiProvider {
         }
     }
 
-    async getReview(code: string): Promise<string> {
+    async getReview(code: string, filename: string): Promise<string> {
+        const extensionToLanguageMap: Record<string, string> = {
+            // JavaScript/TypeScript
+            js: 'javascript',
+            jsx: 'jsx',
+            ts: 'typescript',
+            tsx: 'tsx',
 
+            // Web / HTML / CSS
+            html: 'html',
+            css: 'css',
+            scss: 'scss',
+            less: 'less',
+
+            // JSON/YAML
+            json: 'json',
+            yml: 'yaml',
+            yaml: 'yaml',
+
+            // Backend / Server
+            py: 'python',
+            java: 'java',
+            c: 'c',
+            cpp: 'cpp',
+            cs: 'csharp',
+            go: 'go',
+            php: 'php',
+            rb: 'ruby',
+            rs: 'rust',
+
+            // Shell / Config
+            sh: 'bash',
+            bash: 'bash',
+            zsh: 'bash',
+            env: 'dotenv',
+            toml: 'toml',
+            ini: 'ini',
+            dockerfile: 'docker',
+
+            // Infra / DevOps
+            tf: 'hcl',         // Terraform
+            md: 'markdown',
+
+            // Misc
+            sql: 'sql',
+            xml: 'xml',
+            txt: 'text',
+            log: 'text',
+        };
+        const ext = filename.split('.').pop()?.toLowerCase() || '';
+        const language = extensionToLanguageMap[ext] || 'plaintext';
         const prompt = `
-            You are a **Secure Code Auditor and Compiler**, tasked with reviewing the provided code for **correctness**, **performance**, **maintainability**, and **security(memory leaks) compliance**.
+            You are a **Secure Code Auditor and Compiler for ${language}**, tasked with reviewing the provided code for **correctness**, **performance**, **maintainability**, and **security(memory leaks) compliance**.
 
             Review the following code thoroughly and provide a **concise, professional summary**, covering:
 
@@ -230,7 +280,7 @@ export class GeminiService extends AiProvider {
             - Add clear, helpful inline comments (brief, not noisy)
             - Ensure it's clean, readable, idiomatic, and production-ready
 
-            \`\`\`ts
+            \`\`\`${ext}
             ${code}
             \`\`\`
             `;
