@@ -76,19 +76,17 @@ getDataFromPR(
   const sender = body?.sender?.login;
   const action = body?.action;
 
-  // 🛑 Ignore non-pull_request events
+
   if (event !== 'pull_request') {
     console.log(`❌ Ignoring non-PR event: ${event}`);
     return Promise.resolve({ ignored: true, reason: 'not a pull_request event' });
   }
 
-  // 🔁 Prevent infinite loop from bot comments
   if (sender === 'ai-reviewer-gm[bot]') {
     console.log('🔁 Skipping bot-triggered event');
     return Promise.resolve({ ignored: true, reason: 'bot-triggered event' });
   }
 
-  // ⛔ Skip actions we're not interested in
   if (!['opened', 'synchronize'].includes(action)) {
     console.log(`ℹ️ Skipping unsupported PR action: ${action}`);
     return Promise.resolve({ ignored: true, reason: 'unsupported action' });
@@ -97,8 +95,5 @@ getDataFromPR(
   console.log(`<------------- PR ${action.toUpperCase()} Triggered --------------->`);
   return this.appService.handlePullRequestOpened(body);
 }
-
-
-  
 
 }

@@ -109,31 +109,48 @@ export class GeminiService extends AiProvider {
     async getReview(code: string): Promise<string> {
 
         const prompt = `
-            You are a senior software architect and secure coding expert.
+            You are a senior software architect with deep expertise in secure coding, performance optimization, and modern software engineering practices.
 
-            Review the following code and provide a concise, actionable summary focusing on:
-            1. Bugs or logic errors
-            2. Performance or memory optimizations
-            3. Security issues (e.g., secrets, unsafe patterns)
-            4. Formatting/linting concerns
-            5. Idiomatic improvements
-            6. A final overall comment formatted for team leads or project managers to copy-paste directly into GitHub, JIRA, or similar tools.
+            Review the following code thoroughly and provide a **concise, professional summary**, covering:
+
+            1. ✅ **Bug & Logic Flaws** – Identify functional errors or unintended behavior.
+            2. 🚀 **Performance Bottlenecks** – Highlight inefficient patterns or suboptimal data handling.
+            3. 🔒 **Security Risks** – Detect hardcoded secrets, unsafe operations, injection points, or missing validations.
+            4. 🧹 **Code Quality & Standards** – Check for violations of clean code, consistency, readability, and standard conventions (naming, spacing, modularity).
+            5. 🔁 **Code Reframing** – Suggest better code structures or patterns that improve clarity, reusability, or testability.
+            6. 📃 **Documentation & Commenting** – Recommend missing docstrings, module descriptions, or helpful inline comments for maintainability.
+            7. 🔍 **Version Control Awareness** – If applicable, mention if the diff suggests technical debt, poor refactors, or merge risks.
+            8. 📦 **Security Compliance (Optional)** – If applicable, reference common standards (OWASP, CWE, etc.) or suggest tooling.
+
+            ---
+
+            ### 🔍 **Summary Review** (use bullet points, be direct, skip trivial issues):
+
+            - [ ] Bugs or logic errors
+            - [ ] Performance or memory optimizations
+            - [ ] Security vulnerabilities
+            - [ ] Readability / code structure
+            - [ ] Best practices and linting issues
+
+            ---
+
+            ### 📌 **Manager-Ready Summary** (final note for team leads/project managers):
             - Use a professional tone
-            - Summarize the key issues fixed
-            - Mention improvements in readability, security, or performance
-            - Keep it brief and high-level
+            - Summarize major improvements (e.g., performance, security, clarity)
+            - Keep it high-level and ready to paste in GitHub/JIRA/etc.
 
-            Use bullet points for points 1–5. Be direct, only note issues worth fixing.
+            ---
 
-            Then, rewrite the code:
-            - Apply all necessary corrections based on your review
-            - Add clear and helpful inline comments so a project manager can understand the logic
-            - Ensure the final version is clean, readable, and production-ready
+            ### 🛠️ **Corrected & Refactored Code Output**
+            - Rewrite the code with all recommended fixes
+            - Add clear, helpful inline comments (brief, not noisy)
+            - Ensure it's clean, readable, idiomatic, and production-ready
 
             \`\`\`
             ${code}
             \`\`\`
-        `;
+            `;
+
 
 
 
