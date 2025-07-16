@@ -20,6 +20,7 @@ export class GeminiService extends AiProvider {
         }
         const genAI = new GoogleGenerativeAI(apiKey)
         this.model = genAI.getGenerativeModel({ model: 'models/gemini-2.0-flash' })
+
     }
 
     async reviewWithGemini(payload: ReviewPayloadItem[]) {
