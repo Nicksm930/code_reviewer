@@ -77,6 +77,7 @@ export class GeminiService extends AiProvider {
                     5. Be specific and constructive in your feedback.
 
                     Provide your review in the following JSON format:
+                    Your final output should consist of ONLY the JSON object below — no extra commentary, formatting, or markdown:
                     <output_format>
                     {
                     "filename": "The name of the file",
