@@ -1,7 +1,7 @@
-const data={
+const data = {
   ref: 'refs/heads/main',
-  before: '73294107f791eef82f74c1fdb9aae20205a5f8c8',  
-  after: '6eb56c214253c7fd0664d4e84c84fe43e967191c',   
+  before: '73294107f791eef82f74c1fdb9aae20205a5f8c8',
+  after: '6eb56c214253c7fd0664d4e84c84fe43e967191c',
   repository: {
     id: 1016614969,
     node_id: 'R_kgDOPJhQOQ',
@@ -16,8 +16,8 @@ const data={
       node_id: 'MDQ6VXNlcjkxMDY1Mjc0',
       avatar_url: 'https://avatars.githubusercontent.com/u/91065274?v=4',
       gravatar_id: '',
-      url: 'https://api.github.com/users/Nicksm930',   
-      html_url: 'https://github.com/Nicksm930',        
+      url: 'https://api.github.com/users/Nicksm930',
+      html_url: 'https://github.com/Nicksm930',
       followers_url: 'https://api.github.com/users/Nicksm930/followers',
       following_url: 'https://api.github.com/users/Nicksm930/following{/other_user}',
       gists_url: 'https://api.github.com/users/Nicksm930/gists{/gist_id}',
@@ -37,7 +37,7 @@ const data={
     url: 'https://api.github.com/repos/Nicksm930/code_reviewer',
     forks_url: 'https://api.github.com/repos/Nicksm930/code_reviewer/forks',
     keys_url: 'https://api.github.com/repos/Nicksm930/code_reviewer/keys{/key_id}',
-    collaborators_url: 'https://api.github.com/repos/Nicksm930/code_reviewer/collaborators{/collaborator}',   
+    collaborators_url: 'https://api.github.com/repos/Nicksm930/code_reviewer/collaborators{/collaborator}',
     teams_url: 'https://api.github.com/repos/Nicksm930/code_reviewer/teams',
     hooks_url: 'https://api.github.com/repos/Nicksm930/code_reviewer/hooks',
     issue_events_url: 'https://api.github.com/repos/Nicksm930/code_reviewer/issues/events{/number}',
@@ -58,7 +58,7 @@ const data={
     commits_url: 'https://api.github.com/repos/Nicksm930/code_reviewer/commits{/sha}',
     git_commits_url: 'https://api.github.com/repos/Nicksm930/code_reviewer/git/commits{/sha}',
     comments_url: 'https://api.github.com/repos/Nicksm930/code_reviewer/comments{/number}',
-    issue_comment_url: 'https://api.github.com/repos/Nicksm930/code_reviewer/issues/comments{/number}',       
+    issue_comment_url: 'https://api.github.com/repos/Nicksm930/code_reviewer/issues/comments{/number}',
     contents_url: 'https://api.github.com/repos/Nicksm930/code_reviewer/contents/{+path}',
     compare_url: 'https://api.github.com/repos/Nicksm930/code_reviewer/compare/{base}...{head}',
     merges_url: 'https://api.github.com/repos/Nicksm930/code_reviewer/merges',
@@ -117,7 +117,7 @@ const data={
     node_id: 'MDQ6VXNlcjkxMDY1Mjc0',
     avatar_url: 'https://avatars.githubusercontent.com/u/91065274?v=4',
     gravatar_id: '',
-    url: 'https://api.github.com/users/Nicksm930',     
+    url: 'https://api.github.com/users/Nicksm930',
     html_url: 'https://github.com/Nicksm930',
     followers_url: 'https://api.github.com/users/Nicksm930/followers',
     following_url: 'https://api.github.com/users/Nicksm930/following{/other_user}',
@@ -139,12 +139,12 @@ const data={
   compare: 'https://github.com/Nicksm930/code_reviewer/compare/73294107f791...6eb56c214253',
   commits: [
     {
-      id: '6eb56c214253c7fd0664d4e84c84fe43e967191c',  
+      id: '6eb56c214253c7fd0664d4e84c84fe43e967191c',
       tree_id: '374cf739d12d6803f0f5cc5f13f433f7c6c1f32a',
       distinct: true,
       message: 'hooks commit',
       timestamp: '2025-07-10T16:57:16+05:30',
-      url: 'https://github.com/Nicksm930/code_reviewer/commit/6eb56c214253c7fd0664d4e84c84fe43e967191c',      
+      url: 'https://github.com/Nicksm930/code_reviewer/commit/6eb56c214253c7fd0664d4e84c84fe43e967191c',
       author: [Object],
       committer: [Object],
       added: [],
@@ -153,12 +153,12 @@ const data={
     }
   ],
   head_commit: {
-    id: '6eb56c214253c7fd0664d4e84c84fe43e967191c',    
+    id: '6eb56c214253c7fd0664d4e84c84fe43e967191c',
     tree_id: '374cf739d12d6803f0f5cc5f13f433f7c6c1f32a',
     distinct: true,
     message: 'hooks commit',
     timestamp: '2025-07-10T16:57:16+05:30',
-    url: 'https://github.com/Nicksm930/code_reviewer/commit/6eb56c214253c7fd0664d4e84c84fe43e967191c',        
+    url: 'https://github.com/Nicksm930/code_reviewer/commit/6eb56c214253c7fd0664d4e84c84fe43e967191c',
     author: {
       name: 'nikhilsm930',
       email: 'nikhilsm930@gmail.com',
@@ -171,6 +171,102 @@ const data={
     },
     added: [],
     removed: [],
-    modified: [ 'src/app.controller.ts', 'src/app.service.ts' ]
+    modified: ['src/app.controller.ts', 'src/app.service.ts']
   }
-}   
+}
+
+// async reviewWithGemini(payload: ReviewPayloadItem[]) {
+
+//     this.customLogger.log(`Started Reviewing with Gemini-Flash-2.0`);
+
+//     const reviews: Record<string, any> = {};
+
+//     for (const file of payload) {
+//         const prompt = `
+//                 You are an expert TypeScript code reviewer tasked with reviewing and auditing the code in a provided file. Your goal is to identify issues, suggest improvements, and provide comments on code quality, readability, potential bugs, and best practices according to TypeScript and relevant frameworks.
+
+//                 You will be given the following information:
+//                 1. The filename
+//                 2. A diff of the changes
+//                 3. The previous version of the code
+//                 4. The current version of the code
+
+//                 Here is the file information:
+
+//                 <filename>${file.filename}</filename>
+
+//                 Review the following changes:
+
+//                 <diff>
+//                 \`\`\`diff
+//                 ${file.patch}
+//                 \`\`\`
+//                 </diff>
+
+//                 Previous code:
+//                 <previous_code>
+//                 \`\`\`ts
+//                 ${file.previousCode}
+//                 \`\`\`
+//                 </previous_code>
+
+//                 Current code:
+//                 <current_code>
+//                 \`\`\`ts
+//                 ${file.code}
+//                 \`\`\`
+//                 </current_code>
+
+//                 Instructions for reviewing the code:
+//                 1. Carefully examine the diff, previous code, and current code.
+//                 2. Identify any issues, potential improvements, or noteworthy aspects of the code.
+//                 3. Focus on:
+//                 - Code quality
+//                 - Readability
+//                 - Potential bugs
+//                 - Adherence to TypeScript best practices
+//                 - Proper use of relevant frameworks (if applicable)
+//                 4. For each comment, try to provide the approximate line number where the issue or improvement is located.
+//                 5. Be specific and constructive in your feedback.
+
+//                 Provide your review in the following JSON format:
+//                 Your final output should consist of ONLY the JSON object below — no extra commentary, formatting, or markdown:
+//                 <output_format>
+//                 {
+//                 "filename": "The name of the file",
+//                 "comments": [
+//                     { "line": 123, "comment": "Your comment here." }
+//                 ]
+//                 }
+//                 </output_format>
+
+//                 Your final output should consist of only the JSON object containing the filename and comments. Do not include any additional text, explanations, or formatting outside of this JSON structure.
+//                 `;
+//         try {
+//             const result = await this.model.generateContent(prompt);
+//             const text = await result.response.text();
+//             const match = text.match(/```json\s*([\s\S]+?)```/i);
+//             const jsonText = match ? match[1] : text;
+//             const parsed = this.safeJSONParse(jsonText);
+
+//             if (parsed?.comments && Array.isArray(parsed.comments)) {
+//                 reviews[file.filename] = parsed.comments;
+//             } else {
+//                 this.customLogger.warn(`No comments found in AI output for ${file.filename}`);
+//                 reviews[file.filename] = [];
+//             }
+
+
+//             setTimeout(() => {
+//                 this.customLogger.debug(`Generated AI Review for file: ${file.filename}`)
+//             }, 5000)
+//         } catch (err) {
+//             console.error(`Error reviewing ${file.filename}:`, err);
+//             reviews[file.filename] = [
+//                 { line: 0, comment: "AI review failed or quota exceeded." },
+//             ];
+//         }
+//     }
+//     this.customLogger.log(`Successfully completed Reviews`)
+//     return reviews;
+// }
