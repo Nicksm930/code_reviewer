@@ -110,7 +110,7 @@ export class AppService {
     const repoOwner = repo.owner.login;
     const repoName = repo.name;
 
-    this.customLogger.log(`function(handlePullRequestOpened) => PR #${prNumber} Opened: ${baseSha} → ${headSha}`)
+    this.customLogger.debug(`function(handlePullRequestOpened) => PR #${prNumber} Opened: ${baseSha} → ${headSha}`)
     const reviews = await this.codeReviewService.generateReview(baseSha, headSha);
     const aiOutput = await this.geminiService.reviewWithGemini(reviews);
     const output = { [headSha]: aiOutput };
