@@ -5,6 +5,7 @@ import { ReviewCacheService } from './review-cache/review-cache.service';
 import { Octokit } from '@octokit/rest';
 import { GithubService } from './github/github.service';
 import { GithubAppService } from './github-app/github-app.service';
+import { CustomloggerService } from './customlogger/customlogger.service';
 export interface GitHubPushEvent {
   ref: string;
   before: string;
@@ -78,7 +79,8 @@ export class AppService {
     private readonly geminiService: GeminiService,
     private readonly reviewCacheService: ReviewCacheService,
     private readonly githubService: GithubService,
-    private readonly githubAppService: GithubAppService
+    private readonly githubAppService: GithubAppService,
+    private readonly customLogger: CustomloggerService
   ) {
     this.octokit = this.githubService.getOctokit();
   }
@@ -88,13 +90,9 @@ export class AppService {
   }
 
   async getDataFromHook(data: GitHubPushEvent): Promise<any> {
-    console.log("Data", data);
     const { before, after } = data;
     const reviews = await this.codeReviewService.generateReview(before, after)
-    // console.log("Payload for Review", reviews);
     const output = await this.geminiService.reviewWithGemini(reviews)
-    // console.log("Ouput", JSON.stringify(output, null, 2));
-    // console.log("New Commit removed");
     this.reviewCacheService.set(after, output)
     return output;
   }
@@ -112,75 +110,27 @@ export class AppService {
     const repoOwner = repo.owner.login;
     const repoName = repo.name;
 
-    console.log(`--------------- PR #${prNumber} Opened: ${baseSha} → ${headSha} -----------------------`);
+    this.customLogger.log(`function(handlePullRequestOpened) => PR #${prNumber} Opened: ${baseSha} → ${headSha}`)
     const reviews = await this.codeReviewService.generateReview(baseSha, headSha);
-    // console.log("✅ Reviews fetched:", reviews.map(f => f.filename));
     const aiOutput = await this.geminiService.reviewWithGemini(reviews);
     const output = { [headSha]: aiOutput };
 
-    console.log("------------------------Sotoring AI review in cache-----------------------");
+    this.customLogger.log(`Storing AI Reviews in Cache Started`)
     this.reviewCacheService.set(headSha, output);
-    console.log("--------------------Stored AI review in cache successfull-----------------------");
+    this.customLogger.log(`Storing AI Reviews in Cache Successfull`)
+    this.customLogger.log(`Storing AI Reviews in Cache Successfull`)
 
-    // 3. Apply comments to GitHub PR
-    console.log("----------------Applying inline comments-----------------------");
+    this.customLogger.log(`Applying Comments for (GITHUB) Pull Request #${prNumber}`);
     await this.applyCommentsForPr(output, headSha, {
       repoOwner,
       repoName,
       prNumber
     });
-    console.log("--------------------Pr Comments Added Succesfully (Check Git)------------------->");
+    this.customLogger.log(`Successfully Applied Comments for (GITHUB) Pull Request  #${prNumber}`)
 
     return output;
   }
 
-  // async applyCommentsForPr(
-  //   output: any,
-  //   commitId: string,
-  //   options: { repoOwner: string; repoName: string; prNumber: number }
-  // ) {
-  //   const { repoOwner, repoName, prNumber } = options;
-
-  //   const prFiles = await this.octokit.pulls.listFiles({
-  //     owner: repoOwner,
-  //     repo: repoName,
-  //     pull_number: prNumber
-  //   });
-
-  //   const files = prFiles.data;
-  //   const commitComments = output?.[commitId];
-
-  //   if (!commitComments || typeof commitComments !== 'object') {
-  //     console.warn(`⚠️ No review comments found for commit: ${commitId}`);
-  //     return;
-  //   }
-
-  //   for (const [filePath, comments] of Object.entries(commitComments as Record<string, ReviewComment[]>)) {
-  //     const prFile = files.find(f => f.filename === filePath);
-  //     if (!prFile || !prFile.patch) continue;
-
-  //     const diffLines = prFile.patch.split('\n');
-  //     if (!Array.isArray(comments)) {
-  //       console.error(`Invalid comments format for ${filePath}:`, comments);
-  //       continue;
-  //     }
-
-  //     for (const { line, comment } of comments) {
-  //       const position = this.mapLineToDiffPosition(diffLines, line);
-  //       if (position === -1) continue;
-
-  //       await this.octokit.pulls.createReviewComment({
-  //         owner: repoOwner,
-  //         repo: repoName,
-  //         pull_number: prNumber,
-  //         commit_id: commitId,
-  //         path: filePath,
-  //         position,
-  //         body: comment
-  //       });
-  //     }
-  //   }
-  // }
   async applyCommentsForPr(
     output: any,
     commitId: string,
@@ -200,7 +150,7 @@ export class AppService {
     const commitComments = output?.[commitId];
 
     if (!commitComments || typeof commitComments !== 'object') {
-      console.warn(`⚠️ No review comments found for commit: ${commitId}`);
+      this.customLogger.warn(`⚠️ No review comments found for commit: ${commitId}`);
       return;
     }
 
@@ -210,7 +160,7 @@ export class AppService {
 
       const diffLines = prFile.patch.split('\n');
       if (!Array.isArray(comments)) {
-        console.error(`Invalid comments format for ${filePath}:`, comments);
+        this.customLogger.error(`Invalid comments format for ${filePath}:`, comments);
         continue;
       }
 

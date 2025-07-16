@@ -2,6 +2,7 @@
 import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
+import { CustomloggerService } from 'src/customlogger/customlogger.service';
 
 @Injectable()
 export class CodeReviewService {
@@ -10,13 +11,14 @@ export class CodeReviewService {
   private readonly REPO = 'code_reviewer';
   private readonly TOKEN = process.env.GITHUB_TOKEN;
 
-  constructor(private readonly httpService: HttpService) { }
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly customLogger: CustomloggerService
+  ) { }
 
   async generateReview(before: string, after: string) {
-    console.log("-------------------Generating Data for Review Based on Diffs------------------");
-
+    this.customLogger.log(`Fetching patch for Review Based on Diffs`)
     const compareUrl = `${this.GITHUB_API}/repos/${this.OWNER}/${this.REPO}/compare/${before}...${after}`;
-
     const headers = {
       Authorization: `Bearer ${this.TOKEN}`,
       Accept: 'application/vnd.github.v3+json',
@@ -46,7 +48,7 @@ export class CodeReviewService {
         };
       })
     );
-    console.log("-------------------Generated Review Data Based on Diffs------------------");
+    this.customLogger.log(`Successfully Generated Reviews for Diffs`);
     return reviewData;
   }
 
@@ -72,7 +74,7 @@ export class CodeReviewService {
       );
       return response.data;
     } catch (err) {
-      console.warn(`Could not fetch previous version of ${path}`, err.message);
+      this.customLogger.warn(`Could not fetch previous version of ${path} : ${err.message}`);
       return null;
     }
   }

@@ -2,32 +2,31 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { FileLoggerInfo } from './interfaces/file-logger.interface';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { CustomloggerService } from 'src/customlogger/customlogger.service';
 
 @Injectable()
 export class FileloggerService implements OnModuleInit {
     private filePaths = new Map<string, FileLoggerInfo>();
     private ignored = ['node_modules', 'dist', '.git', '.env', '.gitignore'];
 
+    constructor(
+        private readonly customLogger: CustomloggerService
+    ) { }
+
     async onModuleInit() {
         const currentDir = path.resolve(process.cwd(), 'src');
-        console.log("Current Working Dir", currentDir);
+        this.customLogger.log(`Current Working Directory : ${currentDir}`);
         await this.scanDirectory(currentDir);
     }
 
     private async scanDirectory(dir: string): Promise<void> {
         const files = await fs.readdir(dir);
-
-
         for (const file of files) {
-            // console.log("Files",files);
             if (this.ignored.includes(file.toLowerCase())) {
                 continue;
             }
             const fullPath = path.join(dir, file);
-            // console.log(fullPath);
-
             const stat = await fs.stat(fullPath);
-            // console.log("stats",stat);
 
             if (stat.isDirectory()) {
                 await this.scanDirectory(fullPath);

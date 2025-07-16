@@ -4,16 +4,17 @@ import { ConfigService } from '@nestjs/config';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { ReviewPayloadItem } from 'src/app.service';
 import { log } from 'console';
+import { CustomloggerService } from 'src/customlogger/customlogger.service';
 
 @Injectable()
 export class GeminiService extends AiProvider {
     private model;
     constructor(
-        private readonly configService: ConfigService
+        private readonly configService: ConfigService,
+        private readonly customLogger: CustomloggerService
     ) {
         super();
         const apiKey = this.configService.get<string>('GEMINI_API_KEY');
-        // console.log("API KEY", apiKey);
 
         if (!apiKey) {
             throw new NotFoundException("Api key is undefined")
@@ -23,7 +24,8 @@ export class GeminiService extends AiProvider {
     }
 
     async reviewWithGemini(payload: ReviewPayloadItem[]) {
-        console.log("------------------Reviewing with Gemini --------------------------");
+
+        this.customLogger.log(`Started Reviewing with Gemini-Flash-2.0`);
 
         const reviews: Record<string, any> = {};
 
@@ -87,28 +89,17 @@ export class GeminiService extends AiProvider {
 
                     Your final output should consist of only the JSON object containing the filename and comments. Do not include any additional text, explanations, or formatting outside of this JSON structure.
                     `;
-
             try {
                 const result = await this.model.generateContent(prompt);
-                // console.log("Log results", result);
-
                 const text = await result.response.text();
-
-                // console.log("text", text);
-
-                // Extract JSON from code block if present
                 const match = text.match(/```json\s*([\s\S]+?)```/i);
                 const jsonText = match ? match[1] : text;
-
                 const parsed = this.safeJSONParse(jsonText);
-                // console.log("parsed", parsed);
 
                 if (parsed?.comments && Array.isArray(parsed.comments)) {
                     reviews[file.filename] = parsed.comments;
-                    // console.log("In True block", reviews, reviews[file.filename]);
-
                 } else {
-                    console.warn(`No comments found in AI output for ${file.filename}`);
+                    this.customLogger.warn(`No comments found in AI output for ${file.filename}`);
                     reviews[file.filename] = [];
                 }
             } catch (err) {
@@ -118,18 +109,15 @@ export class GeminiService extends AiProvider {
                 ];
             }
         }
-        console.log("-------------------Review Generated-----------------------------");
-
+        this.customLogger.log(`Successfully completed Reviews`)
         return reviews;
     }
 
     safeJSONParse(str: string): any | null {
         try {
-            // console.log("In safe json", JSON.parse(str));
-
             return JSON.parse(str);
         } catch (e) {
-            console.error("JSON parse error:", e.message);
+            this.customLogger.error("JSON parse error:", e.message);
             return null;
         }
     }
@@ -137,18 +125,19 @@ export class GeminiService extends AiProvider {
     async getReview(code: string): Promise<string> {
 
         const prompt = `
-            You are a senior software architect with deep expertise in secure coding, performance optimization, and modern software engineering practices.
+            You are a **Secure Code Auditor and Compiler**, tasked with reviewing the provided code for **correctness**, **performance**, **maintainability**, and **security(memory leaks) compliance**.
 
             Review the following code thoroughly and provide a **concise, professional summary**, covering:
 
-            1. ✅ **Bug & Logic Flaws** – Identify functional errors or unintended behavior.
-            2. 🚀 **Performance Bottlenecks** – Highlight inefficient patterns or suboptimal data handling.
-            3. 🔒 **Security Risks** – Detect hardcoded secrets, unsafe operations, injection points, or missing validations.
-            4. 🧹 **Code Quality & Standards** – Check for violations of clean code, consistency, readability, and standard conventions (naming, spacing, modularity).
-            5. 🔁 **Code Reframing** – Suggest better code structures or patterns that improve clarity, reusability, or testability.
-            6. 📃 **Documentation & Commenting** – Recommend missing docstrings, module descriptions, or helpful inline comments for maintainability.
-            7. 🔍 **Version Control Awareness** – If applicable, mention if the diff suggests technical debt, poor refactors, or merge risks.
-            8. 📦 **Security Compliance (Optional)** – If applicable, reference common standards (OWASP, CWE, etc.) or suggest tooling.
+            1.**Bug & Logic Flaws** – Identify functional errors or unintended behavior.
+            2.**Performance Bottlenecks** – Highlight inefficient patterns or suboptimal data handling.
+            3.**Security Risks** – Detect hardcoded secrets, unsafe operations, injection points, or missing validations.
+            4.**Code Quality & Standards** – Check for violations of clean code, consistency, readability, and standard conventions (naming, spacing, modularity).
+            5.**Code Reframing** – Suggest better code structures or patterns that improve clarity, reusability, or testability.
+            6.**Documentation & Commenting** – Recommend missing docstrings, module descriptions, or helpful inline comments for maintainability.
+            7.**Version Control Awareness** – If applicable, mention if the diff suggests technical debt, poor refactors, or merge risks.
+            8.**Security Compliance (Optional)** – If applicable, reference common standards (OWASP, CWE, etc.) or suggest tooling.
+            9.**Generate Documentation for the code which will indentify the usage , purpose and its intended output**
 
             ---
 
@@ -159,6 +148,7 @@ export class GeminiService extends AiProvider {
             - [ ] Security vulnerabilities
             - [ ] Readability / code structure
             - [ ] Best practices and linting issues
+            - [ ] Documentation
 
             ---
 
@@ -174,15 +164,13 @@ export class GeminiService extends AiProvider {
             - Add clear, helpful inline comments (brief, not noisy)
             - Ensure it's clean, readable, idiomatic, and production-ready
 
-            \`\`\`
+            \`\`\`ts
             ${code}
             \`\`\`
             `;
 
         const result = await this.model.generateContent(prompt);
         const response = await result.response;
-        // console.log("Response", response);
-
         return response.text()
     }
     getOptimisedCode(code: string): Promise<string> {
