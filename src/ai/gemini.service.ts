@@ -3,7 +3,6 @@ import { AiProvider } from './ai.provider';
 import { ConfigService } from '@nestjs/config';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { ReviewPayloadItem } from 'src/app.service';
-import { log } from 'console';
 import { CustomloggerService } from 'src/customlogger/customlogger.service';
 
 @Injectable()
@@ -102,6 +101,10 @@ export class GeminiService extends AiProvider {
                     this.customLogger.warn(`No comments found in AI output for ${file.filename}`);
                     reviews[file.filename] = [];
                 }
+
+                setTimeout(() => {
+                    this.customLogger.debug(`Generated AI Review for file: ${file.filename}`)
+                }, 5000)
             } catch (err) {
                 console.error(`Error reviewing ${file.filename}:`, err);
                 reviews[file.filename] = [
