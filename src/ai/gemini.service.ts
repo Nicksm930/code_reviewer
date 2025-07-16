@@ -88,38 +88,6 @@ export class GeminiService extends AiProvider {
                     Your final output should consist of only the JSON object containing the filename and comments. Do not include any additional text, explanations, or formatting outside of this JSON structure.
                     `;
 
-            //         const prompt = ` You are an expert TypeScript code reviewer tasked with reviewing ,auditing the code in the provided file. 
-            //     Review the following changes in the file "${file.filename}" and provide:
-            //   - A list of issues, improvements, or comments wherever necessary .
-            //   - Focus on code quality, readability, bugs, and best practices  according to the frameworks
-            //   - Mention the line number (approximate) if possible
-
-
-            //   Respond ONLY in this JSON format:
-            //   {
-            //     "filename": "${file.filename}",
-            //     "comments": [
-            //       { "line": 123, "comment": "Example comment here." }
-            //     ]
-            //   }
-
-            //   --- DIFF ---
-            //   \`\`\`diff
-            //   ${file.patch}
-            //   \`\`\`
-
-            //   --- PREVIOUS CODE ---
-            //   \`\`\`ts
-            //   ${file.previousCode}
-            //   \`\`\`
-
-            //   --- CURRENT CODE ---
-            //   \`\`\`ts
-            //   ${file.code}
-            //   \`\`\`
-
-            //         `;
-
             try {
                 const result = await this.model.generateContent(prompt);
                 // console.log("Log results", result);
@@ -210,51 +178,6 @@ export class GeminiService extends AiProvider {
             ${code}
             \`\`\`
             `;
-
-
-
-
-
-        // const prompt = `
-        // You are a highly experienced project manager with deep expertise in software development, testing, and secure coding practices.
-        // Your role is to review and analyze code with a focus on:
-        // - Code correctness and logic
-        // - Performance optimizations
-        // - Alternative implementations or patterns
-        // - Linting and formatting standards (e.g., ESLint)
-        // - Security risks (exposed secrets, credentials, etc.)
-        // - Best practices in modern development
-
-        // Please provide a detailed review covering:
-        // 1. Bugs or logical flaws
-        // 2. Suggestions for code optimization
-        // 3. Recommendations for linting and formatting
-        // 4. Any security issues (e.g., exposed secrets)
-        // 5. If applicable, a more efficient or idiomatic version of the code
-
-        // Here is the code to review:
-
-        // \`\`\`js
-        // ${code}
-        // \`\`\`
-        // `;
-        // const prompt = `
-        //     You are a senior software architect and secure coding expert.
-
-        //     Review the following code and provide a concise, actionable summary focusing on:
-        //     1. Bugs or logic errors
-        //     2. Performance or memory optimizations
-        //     3. Security issues (e.g., secrets, unsafe patterns)
-        //     4. Formatting/linting concerns (e.g., ESLint)
-        //     5. More efficient or idiomatic alternatives (if any)
-
-        //     Use bullet points. Be direct, avoid explanations unless necessary. Only comment on relevant findings.
-
-        //     Code to review:
-        //     \`\`\`js
-        //     ${code}
-        //     \`\`\`
-        //     `;
 
         const result = await this.model.generateContent(prompt);
         const response = await result.response;
