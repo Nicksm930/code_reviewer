@@ -19,7 +19,6 @@ export class GithubAppService {
       this.customLogger.error(`APP_SECRET_PATH Not Defined`, "Error")
       throw new Error('APP_SECRET_PATH is not defined.');
     }
-    this.customLogger.log(`Octokit initialized Successfully`)
     return fs.readFileSync(path.resolve(pemPath), 'utf8');
   }
 
