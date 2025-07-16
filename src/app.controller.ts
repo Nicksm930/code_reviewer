@@ -93,7 +93,7 @@ export class AppController {
       return Promise.resolve({ ignored: true, reason: 'unsupported action' });
     }
 
-    this.customLogger.log(`Successfully triggered Pull Request with Action: ${action.toUpperCase()}`);
+    this.customLogger.log(`Successfully triggered Pull Request with Action: ${action.toUpperCase()}.`);
     return this.appService.handlePullRequestOpened(body);
   }
 
