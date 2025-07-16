@@ -7,6 +7,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: new CustomloggerService()
   });
+  console.log("Hello World");
+
   const config = new DocumentBuilder()
     .setTitle("Code_Reviewers API")
     .setDescription("Explore all the api's for github codereviwer")
