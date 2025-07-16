@@ -26,11 +26,62 @@ export class GeminiService extends AiProvider {
         this.customLogger.log(`Started Reviewing with Gemini-Flash-2.0`);
 
         const reviews: Record<string, any> = {};
+        const extensionToLanguageMap: Record<string, string> = {
+            // JavaScript/TypeScript
+            js: 'javascript',
+            jsx: 'jsx',
+            ts: 'typescript',
+            tsx: 'tsx',
+
+            // Web / HTML / CSS
+            html: 'html',
+            css: 'css',
+            scss: 'scss',
+            less: 'less',
+
+            // JSON/YAML
+            json: 'json',
+            yml: 'yaml',
+            yaml: 'yaml',
+
+            // Backend / Server
+            py: 'python',
+            java: 'java',
+            c: 'c',
+            cpp: 'cpp',
+            cs: 'csharp',
+            go: 'go',
+            php: 'php',
+            rb: 'ruby',
+            rs: 'rust',
+
+            // Shell / Config
+            sh: 'bash',
+            bash: 'bash',
+            zsh: 'bash',
+            env: 'dotenv',
+            toml: 'toml',
+            ini: 'ini',
+            dockerfile: 'docker',
+
+            // Infra / DevOps
+            tf: 'hcl',         // Terraform
+            md: 'markdown',
+
+            // Misc
+            sql: 'sql',
+            xml: 'xml',
+            txt: 'text',
+            log: 'text',
+        };
+
 
         await Promise.all(
             payload.map(async (file) => {
+                const ext = file.filename.split('.').pop()?.toLowerCase() || '';
+                const language = extensionToLanguageMap[ext] || 'plaintext';
                 const prompt = `
-            You are an expert TypeScript code reviewer tasked with reviewing and auditing the code in a provided file. Your goal is to identify issues, suggest improvements, and provide comments on code quality, readability, potential bugs, and best practices according to TypeScript and relevant frameworks.
+            You are an expert ${language} code reviewer tasked with reviewing and auditing the code in a provided file. Your goal is to identify issues, suggest improvements, and provide comments on code quality, readability, potential bugs, and best practices according to TypeScript and relevant frameworks.
 
             You will be given the following information:
             1. The filename
@@ -59,7 +110,7 @@ export class GeminiService extends AiProvider {
 
             Current code:
             <current_code>
-            \`\`\`ts
+            \`\`\`${ext}
             ${file.code}
             \`\`\`
             </current_code>
@@ -94,7 +145,17 @@ export class GeminiService extends AiProvider {
                     const result = await this.model.generateContent(prompt);
                     const text = await result.response.text();
                     const match = text.match(/```json\s*([\s\S]+?)```/i);
-                    const jsonText = match ? match[1] : text;
+                    // const newText = match ? match[1] : text;
+                    // const jsonText = this.extractFirstJsonObject(text);
+                    // const parsed = this.safeJSONParse(jsonText);
+                    const jsonText = this.extractFirstJsonObject(text);
+
+                    if (!jsonText) {
+                        this.customLogger.warn(`❌ No valid JSON object found in AI output for ${file.filename}`);
+                        reviews[file.filename] = [];
+                        return;
+                    }
+
                     const parsed = this.safeJSONParse(jsonText);
 
                     if (parsed?.comments && Array.isArray(parsed.comments)) {
@@ -118,7 +179,7 @@ export class GeminiService extends AiProvider {
     }
 
 
-    safeJSONParse(str: string): any | null {
+    safeJSONParse(str: string): any {
         try {
             return JSON.parse(str);
         } catch (e) {
@@ -178,6 +239,24 @@ export class GeminiService extends AiProvider {
         const response = await result.response;
         return response.text()
     }
+
+    private extractFirstJsonObject(raw: string): string | null {
+        try {
+            // Remove triple backtick blocks if present
+            raw = raw.replace(/```[\s\S]*?```/g, (match) => {
+                const inside = match.replace(/```[\w]*\n?/, '').replace(/```$/, '');
+                return inside.trim();
+            });
+
+            // Match first JSON object
+            const match = raw.match(/{[\s\S]*}/);
+            return match ? match[0] : null;
+        } catch (err) {
+            this.customLogger.error('Error extracting JSON from AI output', err.message);
+            return null;
+        }
+    }
+
     getOptimisedCode(code: string): Promise<string> {
         throw new Error('Method not implemented.');
     }
