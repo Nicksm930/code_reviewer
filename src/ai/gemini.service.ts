@@ -94,7 +94,17 @@ export class GeminiService extends AiProvider {
                     const result = await this.model.generateContent(prompt);
                     const text = await result.response.text();
                     const match = text.match(/```json\s*([\s\S]+?)```/i);
-                    const jsonText = match ? match[1] : text;
+                    // const newText = match ? match[1] : text;
+                    // const jsonText = this.extractFirstJsonObject(text);
+                    // const parsed = this.safeJSONParse(jsonText);
+                    const jsonText = this.extractFirstJsonObject(text);
+
+                    if (!jsonText) {
+                        this.customLogger.warn(`❌ No valid JSON object found in AI output for ${file.filename}`);
+                        reviews[file.filename] = [];
+                        return;
+                    }
+
                     const parsed = this.safeJSONParse(jsonText);
 
                     if (parsed?.comments && Array.isArray(parsed.comments)) {
@@ -118,7 +128,7 @@ export class GeminiService extends AiProvider {
     }
 
 
-    safeJSONParse(str: string): any | null {
+    safeJSONParse(str: string): any {
         try {
             return JSON.parse(str);
         } catch (e) {
@@ -178,6 +188,24 @@ export class GeminiService extends AiProvider {
         const response = await result.response;
         return response.text()
     }
+
+    private extractFirstJsonObject(raw: string): string | null {
+        try {
+            // Remove triple backtick blocks if present
+            raw = raw.replace(/```[\s\S]*?```/g, (match) => {
+                const inside = match.replace(/```[\w]*\n?/, '').replace(/```$/, '');
+                return inside.trim();
+            });
+
+            // Match first JSON object
+            const match = raw.match(/{[\s\S]*}/);
+            return match ? match[0] : null;
+        } catch (err) {
+            this.customLogger.error('Error extracting JSON from AI output', err.message);
+            return null;
+        }
+    }
+
     getOptimisedCode(code: string): Promise<string> {
         throw new Error('Method not implemented.');
     }
