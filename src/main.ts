@@ -1,11 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { CustomloggerService } from './customlogger/customlogger.service';
 
 async function bootstrap() {
-  console.log("Hello World Nikhil");
-  
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: new CustomloggerService()
+  });
   const config = new DocumentBuilder()
     .setTitle("Code_Reviewers API")
     .setDescription("Explore all the api's for github codereviwer")

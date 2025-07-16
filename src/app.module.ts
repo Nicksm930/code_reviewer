@@ -11,6 +11,7 @@ import { ReviewCacheService } from './review-cache/review-cache.service';
 import { GithubService } from './github/github.service';
 import { GithubModule } from './github/github.module';
 import { GithubAppService } from './github-app/github-app.service';
+import { CustomloggerService } from './customlogger/customlogger.service';
 
 
 @Module({
@@ -23,6 +24,6 @@ import { GithubAppService } from './github-app/github-app.service';
     GithubModule
   ],
   controllers: [AppController],
-  providers: [AppService, FileloggerService, CodeReviewService,GeminiService, ReviewCacheService, GithubService, GithubAppService],
+  providers: [AppService, FileloggerService, CodeReviewService,GeminiService, ReviewCacheService, GithubService, GithubAppService, CustomloggerService],
 })
 export class AppModule { }

@@ -2,12 +2,14 @@ import { Body, Controller, Get, Post, Headers } from '@nestjs/common';
 import { FileloggerService } from './filelogger/filelogger.service';
 import { FileLoggerInfo } from './filelogger/interfaces/file-logger.interface';
 import { AppService, GitHubPushEvent } from './app.service';
+import { CustomloggerService } from './customlogger/customlogger.service';
 
 @Controller('file')
 export class AppController {
   constructor(
     private readonly fileLoggerService: FileloggerService,
-    private readonly appService: AppService
+    private readonly appService: AppService,
+    private readonly customLogger: CustomloggerService
   ) { }
 
   @Get('scan')
@@ -33,7 +35,6 @@ export class AppController {
   @Post('review')
   getReview(@Body() requestData: any): { summary: string } {
     const { filename, code } = requestData;
-    // console.log("Code", code);
     const summary = `✅ Received file: ${filename}\n🔍 Code length: ${code.length} characters\n💡 Suggestion: Check for typos like 'concole.log'`;
     return { summary };
   }
@@ -45,7 +46,7 @@ export class AppController {
 
   @Get('git/commits/ai/reviews')
   getGitAiReview(): any {
-    // console.log("AI");
+    this.customLogger.log(`Generating AI Reviews`)
     return this.appService.getGitAiReview()
   }
 
@@ -78,21 +79,21 @@ export class AppController {
 
 
     if (event !== 'pull_request') {
-      console.log(`❌ Ignoring non-PR event: ${event}`);
+      this.customLogger.log(`❌ Ignoring non-PR event: ${event}`);
       return Promise.resolve({ ignored: true, reason: 'not a pull_request event' });
     }
 
     if (sender === 'ai-reviewer-gm[bot]') {
-      console.log('🔁 Skipping bot-triggered event');
+      this.customLogger.log('🔁 Skipping bot-triggered event');
       return Promise.resolve({ ignored: true, reason: 'bot-triggered event' });
     }
 
     if (!['opened', 'synchronize', 'review_requested'].includes(action)) {
-      console.log(`ℹ️ Skipping unsupported PR action: ${action}`);
+      this.customLogger.log(`ℹ️ Skipping unsupported PR action: ${action}`);
       return Promise.resolve({ ignored: true, reason: 'unsupported action' });
     }
 
-    console.log(`<------------- PR ${action.toUpperCase()} Triggered --------------->`);
+    this.customLogger.log(`Successfully triggered Pull Request with Action: ${action.toUpperCase()}`);
     return this.appService.handlePullRequestOpened(body);
   }
 

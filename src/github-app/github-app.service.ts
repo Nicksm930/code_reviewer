@@ -1,19 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Octokit } from '@octokit/rest'; // ✅ full REST client
+import { Octokit } from '@octokit/rest';
 import { createAppAuth } from '@octokit/auth-app';
 import * as fs from 'fs';
 import * as path from 'path';
+import { CustomloggerService } from 'src/customlogger/customlogger.service';
 
 @Injectable()
 export class GithubAppService {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly customLogger: CustomloggerService
+  ) { }
 
   private getPrivateKey(): string {
     const pemPath = this.configService.get<string>('APP_SECRET_PATH');
     if (!pemPath) {
+      this.customLogger.error(`APP_SECRET_PATH Not Defined`, "Error")
       throw new Error('APP_SECRET_PATH is not defined.');
     }
+    this.customLogger.log(`Octokit initialized Successfully`)
     return fs.readFileSync(path.resolve(pemPath), 'utf8');
   }
 

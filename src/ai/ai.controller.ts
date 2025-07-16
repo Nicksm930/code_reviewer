@@ -10,7 +10,7 @@ export class AiController {
 
   @Post('review')
   generateAIReview(@Body() body: any): Promise<string> {
-      const code = body.code;  // Explicitly extract the `code` property
+    const code = body.code;
     return this.aiProvider.getReview(code);
   }
 }
