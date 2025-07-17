@@ -255,7 +255,6 @@ export class GeminiService extends AiProvider {
         return reviews;
     }
 
-
     safeJSONParse(str: string): any {
         try {
             return JSON.parse(str);
@@ -265,164 +264,6 @@ export class GeminiService extends AiProvider {
         }
     }
 
-    // async getReview(code: string, filename: string): Promise<string> {
-    //     const extensionToLanguageMap: Record<string, string> = {
-    //         // JavaScript/TypeScript
-    //         js: 'javascript',
-    //         jsx: 'jsx',
-    //         ts: 'typescript',
-    //         tsx: 'tsx',
-
-    //         // Web / HTML / CSS
-    //         html: 'html',
-    //         css: 'css',
-    //         scss: 'scss',
-    //         less: 'less',
-
-    //         // JSON/YAML
-    //         json: 'json',
-    //         yml: 'yaml',
-    //         yaml: 'yaml',
-
-    //         // Backend / Server
-    //         py: 'python',
-    //         java: 'java',
-    //         c: 'c',
-    //         cpp: 'cpp',
-    //         cs: 'csharp',
-    //         go: 'go',
-    //         php: 'php',
-    //         rb: 'ruby',
-    //         rs: 'rust',
-
-    //         // Shell / Config
-    //         sh: 'bash',
-    //         bash: 'bash',
-    //         zsh: 'bash',
-    //         env: 'dotenv',
-    //         toml: 'toml',
-    //         ini: 'ini',
-    //         dockerfile: 'docker',
-
-    //         // Infra / DevOps
-    //         tf: 'hcl',         // Terraform
-    //         md: 'markdown',
-
-    //         // Misc
-    //         sql: 'sql',
-    //         xml: 'xml',
-    //         txt: 'text',
-    //         log: 'text',
-    //     };
-    //     const ext = filename.split('.').pop()?.toLowerCase() || '';
-    //     const language = extensionToLanguageMap[ext] || 'plaintext';
-
-    //     const prompt = `
-    //         You are a **Senior Software Architect and Code Auditor**.
-
-    //         Your task is to **analyze the following ${language} code**, but ONLY focus on:
-
-    //         🔺 **Critical / High-Priority issues**
-    //         🔒 Security flaws (Only High Priority , Much Need Attention , Any Secret keys exposed , display as list)
-    //         ❌ Logic errors  (Only High Priority , Much Need Attention , Any Secret keys exposed , display as list)
-    //         🐢 Performance bottlenecks  (Only High Priority , Much Need Attention , Any Secret keys exposed , display as list)
-    //         🧼 Maintainability concerns (only if severe) (Only High Priority , Much Need Attention , Any Secret keys exposed , display as list)
-
-    //         Respond using **ultra-concise Markdown**, without repeating full code.
-
-    //         ---
-
-    //         ## 🧠 Summary  
-    //         (1-2 sentences MAX summarizing the review)
-
-    //         ---
-
-    //         ## ⚠️ Issues  
-    //         List only actual *problem spots*, showing:
-    //         - **Line reference or concept** (not full code)
-    //         - The **specific issue**
-
-    //         Format:
-    //         - **[Line or Concept]**: Brief issue description
-
-    //         ---
-
-    //         ## 💡 Suggestions  
-    //         Only for above issues.
-    //         Explain:
-    //         - **Why it's a problem**
-    //         - **What to use instead** (short)
-
-    //         Format:
-    //         - **[Line or Concept]**: Use X instead of Y because Z
-
-    //         ---
-
-    //         ## ✅ Good Practices  
-    //         Just list **terms or concept names** (no explanations)
-
-    //         Example:
-    //         - Dependency Injection  
-    //         - Early Return  
-    //         - Async/Await Best Practice
-
-    //         ---
-
-    //         Here is the code:
-    //         \`\`\`${ext}
-    //         ${code}
-    //         \`\`\`
-    //         `;
-
-    //     // const prompt = `
-    //     //     You are a **Secure Code Auditor and Compiler for ${language}**, tasked with reviewing the provided code for **correctness**, **performance**, **maintainability**, and **security(memory leaks) compliance**.
-
-    //     //     Review the following code thoroughly and provide a **concise, professional summary**, covering:
-
-    //     //     1.**Bug & Logic Flaws** – Identify functional errors or unintended behavior.
-    //     //     2.**Performance Bottlenecks** – Highlight inefficient patterns or suboptimal data handling.
-    //     //     3.**Security Risks** – Detect hardcoded secrets, unsafe operations, injection points, or missing validations.
-    //     //     4.**Code Quality & Standards** – Check for violations of clean code, consistency, readability, and standard conventions (naming, spacing, modularity).
-    //     //     5.**Code Reframing** – Suggest better code structures or patterns that improve clarity, reusability, or testability.
-    //     //     6.**Documentation & Commenting** – Recommend missing docstrings, module descriptions, or helpful inline comments for maintainability.
-    //     //     7.**Version Control Awareness** – If applicable, mention if the diff suggests technical debt, poor refactors, or merge risks.
-    //     //     8.**Security Compliance (Optional)** – If applicable, reference common standards (OWASP, CWE, etc.) or suggest tooling.
-    //     //     9.**Generate Documentation for the code which will indentify the usage , purpose and its intended output**
-
-    //     //     ---
-
-    //     //     ### 🔍 **Summary Review** (use bullet points, be direct, skip trivial issues):
-
-    //     //     - [ ] Bugs or logic errors
-    //     //     - [ ] Performance or memory optimizations
-    //     //     - [ ] Security vulnerabilities
-    //     //     - [ ] Readability / code structure
-    //     //     - [ ] Best practices and linting issues
-    //     //     - [ ] Documentation
-
-    //     //     ---
-
-    //     //     ### 📌 **Manager-Ready Summary** (final note for team leads/project managers):
-    //     //     - Use a professional tone
-    //     //     - Summarize major improvements (e.g., performance, security, clarity)
-    //     //     - Keep it high-level and ready to paste in GitHub/JIRA/etc.
-
-    //     //     ---
-
-    //     //     ### 🛠️ **Corrected & Refactored Code Output**
-    //     //     - Rewrite the code with all recommended fixes
-    //     //     - Add clear, helpful inline comments (brief, not noisy)
-    //     //     - Ensure it's clean, readable, idiomatic, and production-ready
-
-    //     //     \`\`\`${ext}
-    //     //     ${code}
-    //     //     \`\`\`
-    //     //     `;
-
-    //     const result = await this.model.generateContent(prompt);
-    //     const response = await result.response;
-    //     return response.text()
-    // }
     estimateTokenCount(text: string): number {
         const words = text.trim().split(/\s+/).length;
         return Math.ceil(words / 0.75); // ~0.75 words/token
@@ -543,9 +384,6 @@ export class GeminiService extends AiProvider {
         return responses.join('\n\n---\n\n'); // optional: add separators between chunk results
     }
 
-
-
-
     private extractFirstJsonObject(raw: string): string | null {
         try {
             // Step 1: Try extracting from ```json block
@@ -586,8 +424,6 @@ export class GeminiService extends AiProvider {
         }
         return null;
     }
-
-
 
     getOptimisedCode(code: string): Promise<string> {
         throw new Error('Method not implemented.');
