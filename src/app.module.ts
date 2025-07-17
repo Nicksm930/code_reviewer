@@ -12,8 +12,7 @@ import { GithubService } from './github/github.service';
 import { GithubModule } from './github/github.module';
 import { GithubAppService } from './github-app/github-app.service';
 import { CustomloggerService } from './customlogger/customlogger.service';
-
-
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [AiModule,
@@ -22,7 +21,8 @@ import { CustomloggerService } from './customlogger/customlogger.service';
       envFilePath: '.env'
     }),
     HttpModule,
-    GithubModule
+    GithubModule,
+    UsersModule
   ],
   controllers: [AppController],
   providers: [AppService, FileloggerService, CodeReviewService, GeminiService, ReviewCacheService, GithubService, GithubAppService, CustomloggerService],
