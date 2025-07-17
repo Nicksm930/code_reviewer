@@ -1,26 +1,40 @@
-import requests
+import os
 
-dataList = []
+user_sessions = {}
 
-def fetchdata():
-    for i in range(1000):
-        r = requests.get('https://jsonplaceholder.typicode.com/posts/' + str(i % 100))
-        dataList.append(r.text)
+def get_user_input():
+    return input("Enter your username: ")  # no input validation
 
-def processData():
-    tempList = []
-    for item in dataList:
-        tempList.append(item.upper())
-    return tempList
+def authenticate(user):
+    if user == "admin":  # hardcoded credentials
+        return True
+    return False
 
-def SaveToFile(content):
-    f = open("output.txt", "w")
-    for line in content:
-        f.write(line + '\n')
+def load_user_data(user):
+    with open(f"{user}.txt", "r") as file:  # unsafe file access
+        return file.read()  # no error handling
+
+def process_data(data):
+    lines = data.split("\n")
+    for line in lines:
+        if "password" in line:  # hardcoded logic
+            print("Sensitive info found!")
+        print(line)
+
+def save_session(user):
+    session_data = {"user": user, "data": []}
+    for i in range(10000):  # large unnecessary loop
+        session_data["data"].append("x" * 100)  # memory leak
+    user_sessions[user] = session_data  # unbounded growth
 
 def main():
-    fetchdata()
-    processed = processData()
-    SaveToFile(processed)
+    user = get_user_input()
+    if not authenticate(user):
+        print("Access Denied")
+        return
+
+    data = load_user_data(user)
+    process_data(data)
+    save_session(user)
 
 main()
