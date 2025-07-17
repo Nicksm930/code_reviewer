@@ -118,7 +118,7 @@ export class GeminiService extends AiProvider {
 
             Instructions for reviewing the code:
             1. Carefully examine the diff, previous code, and current code.
-            2. Identify any issues, potential improvements, or noteworthy aspects of the code.
+            2. Identify any issues (very critical or needs immediate attention), potential improvements (list improvements as name of concept), or noteworthy aspects of the code.
             3. Focus on:
             - Code quality
             - Readability
@@ -409,7 +409,7 @@ export class GeminiService extends AiProvider {
             🐢 Performance bottlenecks  (Only High Priority , Much Need Attention , Any Secret keys exposed , display as list)
             🧼 Maintainability concerns (only if severe) (Only High Priority , Much Need Attention , Any Secret keys exposed , display as list)
 
-            Respond using **ultra-concise Markdown**, without repeating full code.
+            Respond using **ultra-concise Markdown**, with specific section of code.
 
             ---
 
