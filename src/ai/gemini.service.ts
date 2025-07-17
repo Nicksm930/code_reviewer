@@ -472,6 +472,75 @@ export class GeminiService extends AiProvider {
 
         return responses.join('\n\n---\n\n');
     }
+    async getAIQueryReview(code: string, filename: string, query: string): Promise<string> {
+        const extensionToLanguageMap: Record<string, string> = {
+            js: 'javascript', jsx: 'jsx', ts: 'typescript', tsx: 'tsx',
+            html: 'html', css: 'css', scss: 'scss', less: 'less',
+            json: 'json', yml: 'yaml', yaml: 'yaml',
+            py: 'python', java: 'java', c: 'c', cpp: 'cpp', cs: 'csharp',
+            go: 'go', php: 'php', rb: 'ruby', rs: 'rust',
+            sh: 'bash', bash: 'bash', zsh: 'bash', env: 'dotenv',
+            toml: 'toml', ini: 'ini', dockerfile: 'docker',
+            tf: 'hcl', md: 'markdown', sql: 'sql', xml: 'xml',
+            txt: 'text', log: 'text'
+        };
+
+        const ext = filename.split('.').pop()?.toLowerCase() || '';
+        const language = extensionToLanguageMap[ext] || 'plaintext';
+
+        const maxTokensPerChunk = 8000;
+        const totalTokens = this.estimateTokenCount(code);
+
+        const chunks = totalTokens > maxTokensPerChunk
+            ? this.chunkCodeByTokens(code, maxTokensPerChunk)
+            : [code];
+
+        const promptTemplate = (lang: string, chunk: string, query: string) => `
+            You are a **Senior Software Architect and Code Auditor**.
+
+            Analyze the following **${lang} code**, and respond only if the query below is directly relevant to the code content.
+
+            If the query is unrelated or out of scope of the code snippet, respond with:  
+            **"⚠️ This query does not relate to the code provided."**
+
+            --- 
+
+            ## 👤 User Query
+
+            "${query}"
+
+            ---
+
+            ## 📄 Code Snippet
+
+            \`\`\`${ext}
+            ${chunk}
+            \`\`\`
+
+            ---
+
+            ## 🧠 Answer
+            `;
+
+        const responses: string[] = [];
+
+        for (const chunk of chunks) {
+            const prompt = promptTemplate(language, chunk, query);
+            const result = await this.model.generateContent(prompt);
+            const response = await result.response;
+            const text = await response.text();
+
+            // Normalize and check if it answered with the off-topic response
+            if (text.trim().includes("⚠️ This query does not relate to the code provided.")) {
+                return "⚠️ This query does not relate to the code provided.";
+            }
+
+            responses.push(text.trim());
+        }
+
+        return responses.join('\n\n---\n\n');
+    }
+
 
 
     private extractFirstJsonObject(raw: string): string | null {
