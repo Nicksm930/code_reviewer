@@ -189,251 +189,165 @@ export class GeminiService extends AiProvider {
         }
     }
 
-    // async getReview(code: string, filename: string): Promise<string> {
-    //     const extensionToLanguageMap: Record<string, string> = {
-    //         // JavaScript/TypeScript
-    //         js: 'javascript',
-    //         jsx: 'jsx',
-    //         ts: 'typescript',
-    //         tsx: 'tsx',
-
-    //         // Web / HTML / CSS
-    //         html: 'html',
-    //         css: 'css',
-    //         scss: 'scss',
-    //         less: 'less',
-
-    //         // JSON/YAML
-    //         json: 'json',
-    //         yml: 'yaml',
-    //         yaml: 'yaml',
-
-    //         // Backend / Server
-    //         py: 'python',
-    //         java: 'java',
-    //         c: 'c',
-    //         cpp: 'cpp',
-    //         cs: 'csharp',
-    //         go: 'go',
-    //         php: 'php',
-    //         rb: 'ruby',
-    //         rs: 'rust',
-
-    //         // Shell / Config
-    //         sh: 'bash',
-    //         bash: 'bash',
-    //         zsh: 'bash',
-    //         env: 'dotenv',
-    //         toml: 'toml',
-    //         ini: 'ini',
-    //         dockerfile: 'docker',
-
-    //         // Infra / DevOps
-    //         tf: 'hcl',         // Terraform
-    //         md: 'markdown',
-
-    //         // Misc
-    //         sql: 'sql',
-    //         xml: 'xml',
-    //         txt: 'text',
-    //         log: 'text',
-    //     };
-    //     const ext = filename.split('.').pop()?.toLowerCase() || '';
-    //     const language = extensionToLanguageMap[ext] || 'plaintext';
-
-    //     const prompt = `
-    //         You are a **Senior Software Architect and Code Auditor**.
-
-    //         Your task is to **analyze the following ${language} code**, but ONLY focus on:
-
-    //         🔺 **Critical / High-Priority issues**
-    //         🔒 Security flaws (Only High Priority , Much Need Attention , Any Secret keys exposed , display as list)
-    //         ❌ Logic errors  (Only High Priority , Much Need Attention , Any Secret keys exposed , display as list)
-    //         🐢 Performance bottlenecks  (Only High Priority , Much Need Attention , Any Secret keys exposed , display as list)
-    //         🧼 Maintainability concerns (only if severe) (Only High Priority , Much Need Attention , Any Secret keys exposed , display as list)
-
-    //         Respond using **ultra-concise Markdown**, without repeating full code.
-
-    //         ---
-
-    //         ## 🧠 Summary  
-    //         (1-2 sentences MAX summarizing the review)
-
-    //         ---
-
-    //         ## ⚠️ Issues  
-    //         List only actual *problem spots*, showing:
-    //         - **Line reference or concept** (not full code)
-    //         - The **specific issue**
-
-    //         Format:
-    //         - **[Line or Concept]**: Brief issue description
-
-    //         ---
-
-    //         ## 💡 Suggestions  
-    //         Only for above issues.
-    //         Explain:
-    //         - **Why it's a problem**
-    //         - **What to use instead** (short)
-
-    //         Format:
-    //         - **[Line or Concept]**: Use X instead of Y because Z
-
-    //         ---
-
-    //         ## ✅ Good Practices  
-    //         Just list **terms or concept names** (no explanations)
-
-    //         Example:
-    //         - Dependency Injection  
-    //         - Early Return  
-    //         - Async/Await Best Practice
-
-    //         ---
-
-    //         Here is the code:
-    //         \`\`\`${ext}
-    //         ${code}
-    //         \`\`\`
-    //         `;
-
-    //     // const prompt = `
-    //     //     You are a **Secure Code Auditor and Compiler for ${language}**, tasked with reviewing the provided code for **correctness**, **performance**, **maintainability**, and **security(memory leaks) compliance**.
-
-    //     //     Review the following code thoroughly and provide a **concise, professional summary**, covering:
-
-    //     //     1.**Bug & Logic Flaws** – Identify functional errors or unintended behavior.
-    //     //     2.**Performance Bottlenecks** – Highlight inefficient patterns or suboptimal data handling.
-    //     //     3.**Security Risks** – Detect hardcoded secrets, unsafe operations, injection points, or missing validations.
-    //     //     4.**Code Quality & Standards** – Check for violations of clean code, consistency, readability, and standard conventions (naming, spacing, modularity).
-    //     //     5.**Code Reframing** – Suggest better code structures or patterns that improve clarity, reusability, or testability.
-    //     //     6.**Documentation & Commenting** – Recommend missing docstrings, module descriptions, or helpful inline comments for maintainability.
-    //     //     7.**Version Control Awareness** – If applicable, mention if the diff suggests technical debt, poor refactors, or merge risks.
-    //     //     8.**Security Compliance (Optional)** – If applicable, reference common standards (OWASP, CWE, etc.) or suggest tooling.
-    //     //     9.**Generate Documentation for the code which will indentify the usage , purpose and its intended output**
-
-    //     //     ---
-
-    //     //     ### 🔍 **Summary Review** (use bullet points, be direct, skip trivial issues):
-
-    //     //     - [ ] Bugs or logic errors
-    //     //     - [ ] Performance or memory optimizations
-    //     //     - [ ] Security vulnerabilities
-    //     //     - [ ] Readability / code structure
-    //     //     - [ ] Best practices and linting issues
-    //     //     - [ ] Documentation
-
-    //     //     ---
-
-    //     //     ### 📌 **Manager-Ready Summary** (final note for team leads/project managers):
-    //     //     - Use a professional tone
-    //     //     - Summarize major improvements (e.g., performance, security, clarity)
-    //     //     - Keep it high-level and ready to paste in GitHub/JIRA/etc.
-
-    //     //     ---
-
-    //     //     ### 🛠️ **Corrected & Refactored Code Output**
-    //     //     - Rewrite the code with all recommended fixes
-    //     //     - Add clear, helpful inline comments (brief, not noisy)
-    //     //     - Ensure it's clean, readable, idiomatic, and production-ready
-
-    //     //     \`\`\`${ext}
-    //     //     ${code}
-    //     //     \`\`\`
-    //     //     `;
-
-    //     const result = await this.model.generateContent(prompt);
-    //     const response = await result.response;
-    //     return response.text()
-    // }
     async getReview(code: string, filename: string): Promise<string> {
         const extensionToLanguageMap: Record<string, string> = {
-            js: 'javascript', jsx: 'jsx', ts: 'typescript', tsx: 'tsx',
-            html: 'html', css: 'css', scss: 'scss', less: 'less',
-            json: 'json', yml: 'yaml', yaml: 'yaml',
-            py: 'python', java: 'java', c: 'c', cpp: 'cpp', cs: 'csharp', go: 'go', php: 'php', rb: 'ruby', rs: 'rust',
-            sh: 'bash', bash: 'bash', zsh: 'bash', env: 'dotenv', toml: 'toml', ini: 'ini', dockerfile: 'docker',
-            tf: 'hcl', md: 'markdown', sql: 'sql', xml: 'xml', txt: 'text', log: 'text'
+            // JavaScript/TypeScript
+            js: 'javascript',
+            jsx: 'jsx',
+            ts: 'typescript',
+            tsx: 'tsx',
+
+            // Web / HTML / CSS
+            html: 'html',
+            css: 'css',
+            scss: 'scss',
+            less: 'less',
+
+            // JSON/YAML
+            json: 'json',
+            yml: 'yaml',
+            yaml: 'yaml',
+
+            // Backend / Server
+            py: 'python',
+            java: 'java',
+            c: 'c',
+            cpp: 'cpp',
+            cs: 'csharp',
+            go: 'go',
+            php: 'php',
+            rb: 'ruby',
+            rs: 'rust',
+
+            // Shell / Config
+            sh: 'bash',
+            bash: 'bash',
+            zsh: 'bash',
+            env: 'dotenv',
+            toml: 'toml',
+            ini: 'ini',
+            dockerfile: 'docker',
+
+            // Infra / DevOps
+            tf: 'hcl',         // Terraform
+            md: 'markdown',
+
+            // Misc
+            sql: 'sql',
+            xml: 'xml',
+            txt: 'text',
+            log: 'text',
         };
         const ext = filename.split('.').pop()?.toLowerCase() || '';
         const language = extensionToLanguageMap[ext] || 'plaintext';
 
-        const maxTokensPerChunk = 8000; // Leave room for prompt & output
-        const totalTokens = this.estimateTokenCount(code);
+        const prompt = `
+            You are a **Senior Software Architect and Code Auditor**.
 
-        const chunks = totalTokens > maxTokensPerChunk
-            ? this.chunkCodeByTokens(code, maxTokensPerChunk)
-            : [code];
+            Your task is to **analyze the following ${language} code**, but ONLY focus on:
 
-        const promptTemplate = (lang: string, chunk: string) => `
-You are a **Senior Software Architect and Code Auditor**.
+            🔺 **Critical / High-Priority issues**
+            🔒 Security flaws (Only High Priority , Much Need Attention , Any Secret keys exposed , display as list)
+            ❌ Logic errors  (Only High Priority , Much Need Attention , Any Secret keys exposed , display as list)
+            🐢 Performance bottlenecks  (Only High Priority , Much Need Attention , Any Secret keys exposed , display as list)
+            🧼 Maintainability concerns (only if severe) (Only High Priority , Much Need Attention , Any Secret keys exposed , display as list)
 
-Your task is to **analyze the following ${lang} code**, but ONLY focus on:
+            Respond using **ultra-concise Markdown**, without repeating full code.
 
-🔺 **Critical / High-Priority issues**
-🔒 Security flaws (Only High Priority , Much Need Attention , Any Secret keys exposed , display as list)
-❌ Logic errors  (Only High Priority , Much Need Attention , Any Secret keys exposed , display as list)
-🐢 Performance bottlenecks  (Only High Priority , Much Need Attention , Any Secret keys exposed , display as list)
-🧼 Maintainability concerns (only if severe) (Only High Priority , Much Need Attention , Any Secret keys exposed , display as list)
+            ---
 
-Respond using **ultra-concise Markdown**, without repeating full code.
+            ## 🧠 Summary  
+            (1-2 sentences MAX summarizing the review)
 
----
+            ---
 
-## 🧠 Summary  
-(1-2 sentences MAX summarizing the review)
+            ## ⚠️ Issues  
+            List only actual *problem spots*, showing:
+            - **Line reference or concept** (not full code)
+            - The **specific issue**
 
----
+            Format:
+            - **[Line or Concept]**: Brief issue description
 
-## ⚠️ Issues  
-List only actual *problem spots*, showing:
-- **Line reference or concept** (not full code)
-- The **specific issue**
+            ---
 
-Format:
-- **[Line or Concept]**: Brief issue description
+            ## 💡 Suggestions  
+            Only for above issues.
+            Explain:
+            - **Why it's a problem**
+            - **What to use instead** (short)
 
----
+            Format:
+            - **[Line or Concept]**: Use X instead of Y because Z
 
-## 💡 Suggestions  
-Only for above issues.
-Explain:
-- **Why it's a problem**
-- **What to use instead** (short)
+            ---
 
-Format:
-- **[Line or Concept]**: Use X instead of Y because Z
+            ## ✅ Good Practices  
+            Just list **terms or concept names** (no explanations)
 
----
+            Example:
+            - Dependency Injection  
+            - Early Return  
+            - Async/Await Best Practice
 
-## ✅ Good Practices  
-Just list **terms or concept names** (no explanations)
+            ---
 
-Example:
-- Dependency Injection  
-- Early Return  
-- Async/Await Best Practice
+            Here is the code:
+            \`\`\`${ext}
+            ${code}
+            \`\`\`
+            `;
 
----
+        // const prompt = `
+        //     You are a **Secure Code Auditor and Compiler for ${language}**, tasked with reviewing the provided code for **correctness**, **performance**, **maintainability**, and **security(memory leaks) compliance**.
 
-Here is the code:
-\`\`\`${ext}
-${chunk}
-\`\`\`
-`;
+        //     Review the following code thoroughly and provide a **concise, professional summary**, covering:
 
-        const responses: string[] = [];
+        //     1.**Bug & Logic Flaws** – Identify functional errors or unintended behavior.
+        //     2.**Performance Bottlenecks** – Highlight inefficient patterns or suboptimal data handling.
+        //     3.**Security Risks** – Detect hardcoded secrets, unsafe operations, injection points, or missing validations.
+        //     4.**Code Quality & Standards** – Check for violations of clean code, consistency, readability, and standard conventions (naming, spacing, modularity).
+        //     5.**Code Reframing** – Suggest better code structures or patterns that improve clarity, reusability, or testability.
+        //     6.**Documentation & Commenting** – Recommend missing docstrings, module descriptions, or helpful inline comments for maintainability.
+        //     7.**Version Control Awareness** – If applicable, mention if the diff suggests technical debt, poor refactors, or merge risks.
+        //     8.**Security Compliance (Optional)** – If applicable, reference common standards (OWASP, CWE, etc.) or suggest tooling.
+        //     9.**Generate Documentation for the code which will indentify the usage , purpose and its intended output**
 
-        for (const chunk of chunks) {
-            const prompt = promptTemplate(language, chunk);
-            const result = await this.model.generateContent(prompt);
-            const response = await result.response;
-            responses.push(await response.text());
-        }
+        //     ---
 
-        return responses.join('\n\n---\n\n'); // optional: add separators between chunk results
+        //     ### 🔍 **Summary Review** (use bullet points, be direct, skip trivial issues):
+
+        //     - [ ] Bugs or logic errors
+        //     - [ ] Performance or memory optimizations
+        //     - [ ] Security vulnerabilities
+        //     - [ ] Readability / code structure
+        //     - [ ] Best practices and linting issues
+        //     - [ ] Documentation
+
+        //     ---
+
+        //     ### 📌 **Manager-Ready Summary** (final note for team leads/project managers):
+        //     - Use a professional tone
+        //     - Summarize major improvements (e.g., performance, security, clarity)
+        //     - Keep it high-level and ready to paste in GitHub/JIRA/etc.
+
+        //     ---
+
+        //     ### 🛠️ **Corrected & Refactored Code Output**
+        //     - Rewrite the code with all recommended fixes
+        //     - Add clear, helpful inline comments (brief, not noisy)
+        //     - Ensure it's clean, readable, idiomatic, and production-ready
+
+        //     \`\`\`${ext}
+        //     ${code}
+        //     \`\`\`
+        //     `;
+
+        const result = await this.model.generateContent(prompt);
+        const response = await result.response;
+        return response.text()
     }
+
 
 
     private extractFirstJsonObject(raw: string): string | null {
@@ -453,37 +367,7 @@ ${chunk}
         }
     }
 
-    estimateTokenCount(text: string): number {
-        const words = text.trim().split(/\s+/).length;
-        return Math.ceil(words / 0.75);
-    }
 
-    chunkCodeByTokens(code: string, maxTokens: number): string[] {
-        const lines = code.split('\n');
-        const chunks: string[] = [];
-
-        let currentChunk: string[] = [];
-        let currentTokens = 0;
-
-        for (const line of lines) {
-            const lineTokens = this.estimateTokenCount(line);
-
-            if (currentTokens + lineTokens > maxTokens) {
-                chunks.push(currentChunk.join('\n'));
-                currentChunk = [];
-                currentTokens = 0;
-            }
-
-            currentChunk.push(line);
-            currentTokens += lineTokens;
-        }
-
-        if (currentChunk.length > 0) {
-            chunks.push(currentChunk.join('\n'));
-        }
-
-        return chunks;
-    }
     getOptimisedCode(code: string): Promise<string> {
         throw new Error('Method not implemented.');
     }
