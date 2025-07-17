@@ -240,6 +240,7 @@ export class GeminiService extends AiProvider {
         };
         const ext = filename.split('.').pop()?.toLowerCase() || '';
         const language = extensionToLanguageMap[ext] || 'plaintext';
+
         const prompt = `
             You are a **Secure Code Auditor and Compiler for ${language}**, tasked with reviewing the provided code for **correctness**, **performance**, **maintainability**, and **security(memory leaks) compliance**.
 
