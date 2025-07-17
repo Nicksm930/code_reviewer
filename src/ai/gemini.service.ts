@@ -81,74 +81,150 @@ export class GeminiService extends AiProvider {
             payload.map(async (file) => {
                 const ext = file.filename.split('.').pop()?.toLowerCase() || '';
                 const language = extensionToLanguageMap[ext] || 'plaintext';
+                //     const prompt = `
+                // You are an expert ${language} code reviewer tasked with reviewing and auditing the code in a provided file. Your goal is to identify issues, suggest improvements, and provide comments on code quality, readability, potential bugs, and best practices according to TypeScript and relevant frameworks.
+
+                // You will be given the following information:
+                // 1. The filename
+                // 2. A diff of the changes
+                // 3. The previous version of the code
+                // 4. The current version of the code
+
+                // Here is the file information:
+
+                // <filename>${file.filename}</filename>
+
+                // Review the following changes:
+
+                // <diff>
+                // \`\`\`diff
+                // ${file.patch}
+                // \`\`\`
+                // </diff>
+
+                // Previous code:
+                // <previous_code>
+                // \`\`\`ts
+                // ${file.previousCode}
+                // \`\`\`
+                // </previous_code>
+
+                // Current code:
+                // <current_code>
+                // \`\`\`${ext}
+                // ${file.code}
+                // \`\`\`
+                // </current_code>
+
+                // Instructions for reviewing the code:
+                // 1. Carefully examine the diff, previous code, and current code.
+                // 2. Identify any issues (very critical or needs immediate attention), potential improvements (list improvements as name of concept), or noteworthy aspects of the code.
+                // 3. Focus on:
+                // - Code quality
+                // - Readability
+                // - Potential bugs
+                // - Adherence to TypeScript best practices
+                // - Proper use of relevant frameworks (if applicable)
+                // 4. For each comment, try to provide the approximate line number where the issue or improvement is located.
+                // 5. Be specific and constructive in your feedback.
+
+                // Provide your review in the following JSON format:
+                // Your final output should consist of ONLY the JSON object below — no extra commentary, formatting, or markdown:
+                // <output_format>
+                // {
+                // "filename": "The name of the file",
+                // "comments": [
+                //     { "line": 123, "comment": "Your comment here." }
+                // ]
+                // }
+                // </output_format>
+
+                // Your final output should be **inside a JSON code block** consist of only the JSON object which contains the filename and comments. Do not include any additional text, explanations, or formatting outside of this JSON structure.
+                //     `;
                 const prompt = `
-            You are an expert ${language} code reviewer tasked with reviewing and auditing the code in a provided file. Your goal is to identify issues, suggest improvements, and provide comments on code quality, readability, potential bugs, and best practices according to TypeScript and relevant frameworks.
+                    You are an expert **${language} code reviewer**.
 
-            You will be given the following information:
-            1. The filename
-            2. A diff of the changes
-            3. The previous version of the code
-            4. The current version of the code
+                    Your task is to **review the following file changes** and provide **critical, concise comments** based on:
 
-            Here is the file information:
+                    - Code Quality
+                    - Readability
+                    - Potential Bugs
+                    - Adherence to TypeScript Best Practices
+                    - Proper Use of Relevant Frameworks
 
-            <filename>${file.filename}</filename>
+                    You are given:
+                    1. The filename
+                    2. A diff of the changes
+                    3. The previous version of the code
+                    4. The current version of the code
 
-            Review the following changes:
+                    ---
 
-            <diff>
-            \`\`\`diff
-            ${file.patch}
-            \`\`\`
-            </diff>
+                    ### 📂 File:
+                    <filename>${file.filename}</filename>
 
-            Previous code:
-            <previous_code>
-            \`\`\`ts
-            ${file.previousCode}
-            \`\`\`
-            </previous_code>
+                    ---
 
-            Current code:
-            <current_code>
-            \`\`\`${ext}
-            ${file.code}
-            \`\`\`
-            </current_code>
+                    ### 🔄 Diff of Changes:
+                    <diff>
+                    \`\`\`diff
+                    ${file.patch}
+                    \`\`\`
+                    </diff>
 
-            Instructions for reviewing the code:
-            1. Carefully examine the diff, previous code, and current code.
-            2. Identify any issues (very critical or needs immediate attention), potential improvements (list improvements as name of concept), or noteworthy aspects of the code.
-            3. Focus on:
-            - Code quality
-            - Readability
-            - Potential bugs
-            - Adherence to TypeScript best practices
-            - Proper use of relevant frameworks (if applicable)
-            4. For each comment, try to provide the approximate line number where the issue or improvement is located.
-            5. Be specific and constructive in your feedback.
+                    ---
 
-            Provide your review in the following JSON format:
-            Your final output should consist of ONLY the JSON object below — no extra commentary, formatting, or markdown:
-            <output_format>
-            {
-            "filename": "The name of the file",
-            "comments": [
-                { "line": 123, "comment": "Your comment here." }
-            ]
-            }
-            </output_format>
+                    ### 🕑 Previous Code:
+                    <previous_code>
+                    \`\`\`ts
+                    ${file.previousCode}
+                    \`\`\`
+                    </previous_code>
 
-            Your final output should consist of only the JSON object containing the filename and comments. Do not include any additional text, explanations, or formatting outside of this JSON structure.
-                `;
+                    ---
+
+                    ### 🆕 Current Code:
+                    <current_code>
+                    \`\`\`${ext}
+                    ${file.code}
+                    \`\`\`
+                    </current_code>
+
+                    ---
+
+                    ### 📝 Instructions:
+                    1. Focus ONLY on **critical issues or high-priority improvements**.
+                    2. Provide precise, helpful feedback — NO praise or unnecessary comments.
+                    3. For each comment:
+                    - Use approximate **line number**
+                    - Be **direct, constructive, and brief**
+                    4. List **only concept names** for general improvements (e.g., "Avoid deep nesting", "Use async/await", etc.)
+                    5. **DO NOT** repeat the code in the comments.
+                    6. **DO NOT** output any extra explanation.
+
+                    ---
+
+                    ### ✅ Output Format:
+                    Respond with ONLY the following JSON structure, wrapped in a \`\`\`json code block:
+
+                    \`\`\`json
+                    {
+                    "filename": "${file.filename}",
+                    "comments": [
+                        { "line": 42, "comment": "Avoid deeply nested if statements. Consider simplifying logic." },
+                        { "line": 87, "comment": "Possible unhandled promise rejection. Use try/catch around await." }
+                    ]
+                    }
+                    \`\`\`
+
+                    ⚠️ Output ONLY this JSON block — do NOT include anything before or after it. Do NOT explain the output. Do NOT use markdown outside the code block.
+                    `;
+
 
                 try {
                     const result = await this.model.generateContent(prompt);
                     const text = await result.response.text();
                     const match = text.match(/```json\s*([\s\S]+?)```/i);
-                    // const newText = match ? match[1] : text;
-                    // const jsonText = this.extractFirstJsonObject(text);
-                    // const parsed = this.safeJSONParse(jsonText);
                     const jsonText = this.extractFirstJsonObject(text);
 
                     if (!jsonText) {
@@ -472,20 +548,45 @@ export class GeminiService extends AiProvider {
 
     private extractFirstJsonObject(raw: string): string | null {
         try {
-            // Remove triple backtick blocks if present
-            raw = raw.replace(/```[\s\S]*?```/g, (match) => {
-                const inside = match.replace(/```[\w]*\n?/, '').replace(/```$/, '');
-                return inside.trim();
-            });
+            // Step 1: Try extracting from ```json block
+            const jsonBlockMatch = raw.match(/```json\s*([\s\S]*?)\s*```/i);
+            if (jsonBlockMatch) {
+                const cleaned = jsonBlockMatch[1].trim();
+                return this.extractBalancedJson(cleaned);
+            }
 
-            // Match first JSON object
-            const match = raw.match(/{[\s\S]*}/);
-            return match ? match[0] : null;
+            // Step 2: Fallback — extract first {...} JSON object
+            const firstBrace = raw.indexOf('{');
+            const lastBrace = raw.lastIndexOf('}');
+            if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+                const candidate = raw.slice(firstBrace, lastBrace + 1);
+                return this.extractBalancedJson(candidate.trim());
+            }
+
+            return null;
         } catch (err) {
             this.customLogger.error('Error extracting JSON from AI output', err.message);
             return null;
         }
     }
+
+    private extractBalancedJson(text: string): string | null {
+        let depth = 0;
+        let start = -1;
+        for (let i = 0; i < text.length; i++) {
+            if (text[i] === '{') {
+                if (depth === 0) start = i;
+                depth++;
+            } else if (text[i] === '}') {
+                depth--;
+                if (depth === 0 && start !== -1) {
+                    return text.substring(start, i + 1);
+                }
+            }
+        }
+        return null;
+    }
+
 
 
     getOptimisedCode(code: string): Promise<string> {
