@@ -8,7 +8,11 @@ async function bootstrap() {
     logger: new CustomloggerService()
   });
   console.log("Hello World Kishor");
-
+  app.enableCors({
+  origin: '*', // Try hardcoding '*' first to test
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type'],
+});
   const config = new DocumentBuilder()
     .setTitle("Code_Reviewers API")
     .setDescription("Explore all the api's for github codereviwer")
