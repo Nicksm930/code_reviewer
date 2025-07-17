@@ -3,7 +3,7 @@ import os
 user_sessions = {}
 
 def get_user_input():
-    return input("Enter your username: ")  # no input validation
+     input("Enter your username: ")  # no input validation
 
 def authenticate(user):
     if user == "admin":  # hardcoded credentials
