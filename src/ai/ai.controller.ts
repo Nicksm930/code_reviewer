@@ -16,4 +16,11 @@ export class AiController {
     this.customLogger.debug(`Function(generateAIReview) => ${filename}`)
     return this.aiProvider.getReview(code, filename);
   }
+
+  @Post('query')
+  generateAIQueryReview(@Body() body: any): Promise<string> {
+    const { filename, code, query } = body;
+    this.customLogger.debug(`Function(generateAIQueryreview)=> ${filename} with query ${query}`)
+    return this.aiProvider.getAIQueryReview(code, filename, query)
+  }
 }
