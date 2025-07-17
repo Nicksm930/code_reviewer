@@ -127,4 +127,10 @@ export class GithubService {
     });
     return data;
   }
+
+  // displayFunctionTest(){
+  //   var a=10;
+  //   const a=20
+    
+  // }
 }
