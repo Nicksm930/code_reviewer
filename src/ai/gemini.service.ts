@@ -296,19 +296,110 @@ export class GeminiService extends AiProvider {
         return chunks;
     }
 
+    // async getReview(code: string, filename: string): Promise<string> {
+    //     const extensionToLanguageMap: Record<string, string> = {
+    //         js: 'javascript', jsx: 'jsx', ts: 'typescript', tsx: 'tsx',
+    //         html: 'html', css: 'css', scss: 'scss', less: 'less',
+    //         json: 'json', yml: 'yaml', yaml: 'yaml',
+    //         py: 'python', java: 'java', c: 'c', cpp: 'cpp', cs: 'csharp', go: 'go', php: 'php', rb: 'ruby', rs: 'rust',
+    //         sh: 'bash', bash: 'bash', zsh: 'bash', env: 'dotenv', toml: 'toml', ini: 'ini', dockerfile: 'docker',
+    //         tf: 'hcl', md: 'markdown', sql: 'sql', xml: 'xml', txt: 'text', log: 'text'
+    //     };
+    //     const ext = filename.split('.').pop()?.toLowerCase() || '';
+    //     const language = extensionToLanguageMap[ext] || 'plaintext';
+
+    //     const maxTokensPerChunk = 8000; // Leave room for prompt & output
+    //     const totalTokens = this.estimateTokenCount(code);
+
+    //     const chunks = totalTokens > maxTokensPerChunk
+    //         ? this.chunkCodeByTokens(code, maxTokensPerChunk)
+    //         : [code];
+
+    //     const promptTemplate = (lang: string, chunk: string) => `
+    //         You are a **Senior Software Architect and Code Auditor**.
+
+    //         Your task is to **analyze the following ${lang} code**, but ONLY focus on:
+
+    //         🔺 **Critical / High-Priority issues**
+    //         🔒 Security flaws (Only High Priority , Much Need Attention , Any Secret keys exposed , display as list)
+    //         ❌ Logic errors  (Only High Priority , Much Need Attention , Any Secret keys exposed , display as list)
+    //         🐢 Performance bottlenecks  (Only High Priority , Much Need Attention , Any Secret keys exposed , display as list)
+    //         🧼 Maintainability concerns (only if severe) (Only High Priority , Much Need Attention , Any Secret keys exposed , display as list)
+
+    //         Respond using **ultra-concise Markdown**, with specific section of code.
+
+    //         ---
+
+    //         ## 🧠 Summary  
+    //         (1-2 sentences MAX summarizing the review)
+
+    //         ---
+
+    //         ## ⚠️ Issues  
+    //         List only actual *problem spots*, showing:
+    //         - **Line reference or concept** (not full code)
+    //         - The **specific issue**
+
+    //         Format:
+    //         - **[Line or Concept]**: Brief issue description
+
+    //         ---
+
+    //         ## 💡 Suggestions  
+    //         Only for above issues.
+    //         Explain:
+    //         - **Why it's a problem**
+    //         - **What to use instead** (short)
+
+    //         Format:
+    //         - **[Line or Concept]**: Use X instead of Y because Z
+
+    //         ---
+
+    //         ## ✅ Good Practices  
+    //         Just list **terms or concept names** (no explanations)
+
+    //         Example:
+    //         - Dependency Injection  
+    //         - Early Return  
+    //         - Async/Await Best Practice
+
+    //         ---
+
+    //         Here is the code:
+    //         \`\`\`${ext}
+    //         ${chunk}
+    //         \`\`\`
+    //         `;
+
+    //     const responses: string[] = [];
+
+    //     for (const chunk of chunks) {
+    //         const prompt = promptTemplate(language, chunk);
+    //         const result = await this.model.generateContent(prompt);
+    //         const response = await result.response;
+    //         responses.push(await response.text());
+    //     }
+
+    //     return responses.join('\n\n---\n\n'); // optional: add separators between chunk results
+    // }
     async getReview(code: string, filename: string): Promise<string> {
         const extensionToLanguageMap: Record<string, string> = {
             js: 'javascript', jsx: 'jsx', ts: 'typescript', tsx: 'tsx',
             html: 'html', css: 'css', scss: 'scss', less: 'less',
             json: 'json', yml: 'yaml', yaml: 'yaml',
-            py: 'python', java: 'java', c: 'c', cpp: 'cpp', cs: 'csharp', go: 'go', php: 'php', rb: 'ruby', rs: 'rust',
-            sh: 'bash', bash: 'bash', zsh: 'bash', env: 'dotenv', toml: 'toml', ini: 'ini', dockerfile: 'docker',
-            tf: 'hcl', md: 'markdown', sql: 'sql', xml: 'xml', txt: 'text', log: 'text'
+            py: 'python', java: 'java', c: 'c', cpp: 'cpp', cs: 'csharp',
+            go: 'go', php: 'php', rb: 'ruby', rs: 'rust',
+            sh: 'bash', bash: 'bash', zsh: 'bash', env: 'dotenv',
+            toml: 'toml', ini: 'ini', dockerfile: 'docker',
+            tf: 'hcl', md: 'markdown', sql: 'sql', xml: 'xml',
+            txt: 'text', log: 'text'
         };
+
         const ext = filename.split('.').pop()?.toLowerCase() || '';
         const language = extensionToLanguageMap[ext] || 'plaintext';
 
-        const maxTokensPerChunk = 8000; // Leave room for prompt & output
+        const maxTokensPerChunk = 8000;
         const totalTokens = this.estimateTokenCount(code);
 
         const chunks = totalTokens > maxTokensPerChunk
@@ -318,55 +409,53 @@ export class GeminiService extends AiProvider {
         const promptTemplate = (lang: string, chunk: string) => `
             You are a **Senior Software Architect and Code Auditor**.
 
-            Your task is to **analyze the following ${lang} code**, but ONLY focus on:
+            Your task is to **analyze the following ${lang} code**, and report ONLY the most **critical** concerns.
 
-            🔺 **Critical / High-Priority issues**
-            🔒 Security flaws (Only High Priority , Much Need Attention , Any Secret keys exposed , display as list)
-            ❌ Logic errors  (Only High Priority , Much Need Attention , Any Secret keys exposed , display as list)
-            🐢 Performance bottlenecks  (Only High Priority , Much Need Attention , Any Secret keys exposed , display as list)
-            🧼 Maintainability concerns (only if severe) (Only High Priority , Much Need Attention , Any Secret keys exposed , display as list)
+            Evaluate:
 
-            Respond using **ultra-concise Markdown**, with specific section of code.
+            1. 🔒 **Security**
+            2. ❌ **Logic/Correctness**
+            3. 🐢 **Performance**
+            4. 🧼 **Code Quality/Maintainability**
 
-            ---
+            For each category, rate issues as:
+            - **CRITICAL**
+            - **MODERATE**
+            - or omit if not relevant.
 
-            ## 🧠 Summary  
-            (1-2 sentences MAX summarizing the review)
-
-            ---
-
-            ## ⚠️ Issues  
-            List only actual *problem spots*, showing:
-            - **Line reference or concept** (not full code)
-            - The **specific issue**
-
-            Format:
-            - **[Line or Concept]**: Brief issue description
+            Respond in **Markdown**, using this structure:
 
             ---
 
-            ## 💡 Suggestions  
-            Only for above issues.
-            Explain:
-            - **Why it's a problem**
-            - **What to use instead** (short)
-
-            Format:
-            - **[Line or Concept]**: Use X instead of Y because Z
+            ## 🧠 Summary
+            _(Very short explanation of key issues)_
 
             ---
 
-            ## ✅ Good Practices  
-            Just list **terms or concept names** (no explanations)
+            ## ⚠️ Issues
 
-            Example:
-            - Dependency Injection  
-            - Early Return  
-            - Async/Await Best Practice
+            - **[Line or Concept]** – _Problem description_  
+            **Status**: CRITICAL / MODERATE  
+            **Type**: Security / Logic / Performance / Quality
+
+            ---
+
+            ## 💡 Suggestions
+
+            - **[Line or Concept]** – _Use X instead of Y because Z_
+
+            ---
+
+            ## ✅ Good Practices
+
+            - Concept A  
+            - Concept B  
+            - Concept C
 
             ---
 
             Here is the code:
+
             \`\`\`${ext}
             ${chunk}
             \`\`\`
@@ -381,8 +470,9 @@ export class GeminiService extends AiProvider {
             responses.push(await response.text());
         }
 
-        return responses.join('\n\n---\n\n'); // optional: add separators between chunk results
+        return responses.join('\n\n---\n\n');
     }
+
 
     private extractFirstJsonObject(raw: string): string | null {
         try {
