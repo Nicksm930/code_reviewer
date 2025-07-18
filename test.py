@@ -40,3 +40,21 @@ if __name__ == "__main__":
             time.sleep(1)
 
     simulate_access()
+
+
+# Example usage
+if __name__ == "__main__":
+    cache = LRUCache(capacity=3)
+
+    def simulate_access():
+        keys = ['a', 'b', 'c', 'd', 'e']
+        for _ in range(10):
+            key = random.choice(keys)
+            if random.random() > 0.5:
+                cache.put(key, f"value_of_{key}")
+            else:
+                cache.get(key)
+            cache.display()
+            time.sleep(1)
+
+    simulate_access()
