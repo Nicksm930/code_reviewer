@@ -81,29 +81,103 @@ export class GeminiService extends AiProvider {
             payload.map(async (file) => {
                 const ext = file.filename.split('.').pop()?.toLowerCase() || '';
                 const language = extensionToLanguageMap[ext] || 'plaintext';
+                // const prompt = `
+                //     You are an expert **${language} code reviewer**.
+
+                //     Your task is to **review the following file changes** and provide **critical, concise comments** and also **severity** based on:
+
+                //     - Code Quality
+                //     - Readability
+                //     - Potential Bugs
+                //     - Adherence to TypeScript Best Practices
+                //     - Proper Use of Relevant Frameworks
+
+                //     You are given:
+                //     1. The filename
+                //     2. A diff of the changes
+                //     3. The previous version of the code
+                //     4. The current version of the code
+
+                //     ---
+
+                //     ### 📂 File:
+                //     <filename>${file.filename}</filename>
+
+                //     ---
+
+                //     ### 🔄 Diff of Changes:
+                //     <diff>
+                //     \`\`\`diff
+                //     ${file.patch}
+                //     \`\`\`
+                //     </diff>
+
+                //     ---
+
+                //     ### 🕑 Previous Code:
+                //     <previous_code>
+                //     \`\`\`ts
+                //     ${file.previousCode}
+                //     \`\`\`
+                //     </previous_code>
+
+                //     ---
+
+                //     ### 🆕 Current Code:
+                //     <current_code>
+                //     \`\`\`${ext}
+                //     ${file.code}
+                //     \`\`\`
+                //     </current_code>
+
+                //     ---
+
+                //     ### 📝 Instructions:
+                //     1. Focus ONLY on **critical issues or high-priority improvements**.
+                //     2. Provide precise, helpful feedback — NO praise or unnecessary comments.
+                //     3. For each comment:
+                //     - Use approximate **line number**
+                //     - Be **direct, constructive, and brief**
+                //     4. List **only concept names** for general improvements (e.g., "Avoid deep nesting", "Use async/await", etc.)
+                //     5. **DO NOT** repeat the code in the comments.
+                //     6. **DO NOT** output any extra explanation.
+
+                //     ---
+
+                //     ### ✅ Output Format:
+                //     Respond with ONLY the following JSON structure, wrapped in a \`\`\`json code block:
+
+                //     \`\`\`json
+                //     {
+                //     "filename": "${file.filename}",
+                //     "comments": [
+                //         { "line": 42, "comment": "Avoid deeply nested if statements. Consider simplifying logic." },
+                //         { "line": 87, "comment": "Possible unhandled promise rejection. Use try/catch around await." }
+                //     ]
+                //     }
+                //     \`\`\`
+
+                //     ⚠️ Output ONLY this JSON block — do NOT include anything before or after it. Do NOT explain the output. Do NOT use markdown outside the code block.
+                //     `;
                 const prompt = `
                     You are an expert **${language} code reviewer**.
 
-                    Your task is to **review the following file changes** and provide **critical, concise comments** and also **severity** based on:
+                    Your task is to conduct a thorough review of the following file changes and return:
+                    1. Inline comments with severity and line number
+                    2. A markdown summary suitable for posting as a GitHub PR thread
 
+                    Focus your review on:
                     - Code Quality
                     - Readability
                     - Potential Bugs
-                    - Adherence to TypeScript Best Practices
-                    - Proper Use of Relevant Frameworks
-
-                    You are given:
-                    1. The filename
-                    2. A diff of the changes
-                    3. The previous version of the code
-                    4. The current version of the code
+                    - Security Risks
+                    - Adherence to ${language} Best Practices
+                    - Performance & Maintainability
 
                     ---
 
                     ### 📂 File:
                     <filename>${file.filename}</filename>
-
-                    ---
 
                     ### 🔄 Diff of Changes:
                     <diff>
@@ -112,16 +186,12 @@ export class GeminiService extends AiProvider {
                     \`\`\`
                     </diff>
 
-                    ---
-
                     ### 🕑 Previous Code:
                     <previous_code>
-                    \`\`\`ts
+                    \`\`\`${ext}
                     ${file.previousCode}
                     \`\`\`
                     </previous_code>
-
-                    ---
 
                     ### 🆕 Current Code:
                     <current_code>
@@ -132,32 +202,45 @@ export class GeminiService extends AiProvider {
 
                     ---
 
-                    ### 📝 Instructions:
-                    1. Focus ONLY on **critical issues or high-priority improvements**.
-                    2. Provide precise, helpful feedback — NO praise or unnecessary comments.
-                    3. For each comment:
-                    - Use approximate **line number**
-                    - Be **direct, constructive, and brief**
-                    4. List **only concept names** for general improvements (e.g., "Avoid deep nesting", "Use async/await", etc.)
-                    5. **DO NOT** repeat the code in the comments.
-                    6. **DO NOT** output any extra explanation.
+                    ### 📝 Output Instructions:
+                    1. Only flag **important issues** — avoid nitpicking or excessive praise.
+                    2. For each issue:
+                    - Provide **approximate line number**
+                    - Add a **brief but clear comment**
+                    - Set **severity** as one of: \`"High"\`, \`"Medium"\`, \`"Low"\`, \`"Info"\`
+                    3. Include a **summary_markdown** field that groups all file-level issues inside a GitHub-friendly markdown block using \`<details>\`.
+                    4. Use emojis for severity in summary:
+                    - 🔴 High
+                    - 🟠 Medium
+                    - 🟡 Low
+                    - 🔵 Info
+                    5. DO NOT include code snippets or explanations outside the JSON.
 
                     ---
 
                     ### ✅ Output Format:
-                    Respond with ONLY the following JSON structure, wrapped in a \`\`\`json code block:
+                    Respond with **only** the following JSON block inside triple backticks:
 
                     \`\`\`json
                     {
                     "filename": "${file.filename}",
                     "comments": [
-                        { "line": 42, "comment": "Avoid deeply nested if statements. Consider simplifying logic." },
-                        { "line": 87, "comment": "Possible unhandled promise rejection. Use try/catch around await." }
-                    ]
+                        {
+                        "line": 42,
+                        "comment": "Do not log sensitive data directly.",
+                        "severity": "High"
+                        },
+                        {
+                        "line": 87,
+                        "comment": "Consider using a shared config file for logger options.",
+                        "severity": "Medium"
+                        }
+                    ],
+                    "summary_markdown": "### 🔍 AI Code Review Summary\\n\\n<details><summary>📄 <code>${file.filename}</code> — 2 issues</summary>\\n\\n- 🔴 **(Line 42)**: Do not log sensitive data directly.\\n- 🟠 **(Line 87)**: Consider using a shared config file for logger options.\\n\\n</details>\\n\\n_Review generated by your AI bot_"
                     }
                     \`\`\`
 
-                    ⚠️ Output ONLY this JSON block — do NOT include anything before or after it. Do NOT explain the output. Do NOT use markdown outside the code block.
+                    ⚠️ Return ONLY this JSON block — no extra markdown, explanations, or text outside it.
                     `;
 
 
