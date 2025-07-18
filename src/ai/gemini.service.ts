@@ -405,60 +405,113 @@ export class GeminiService extends AiProvider {
         const chunks = totalTokens > maxTokensPerChunk
             ? this.chunkCodeByTokens(code, maxTokensPerChunk)
             : [code];
-
         const promptTemplate = (lang: string, chunk: string) => `
-                You are a **Senior Code Auditor and Static Analyzer**.
+    You are a **Senior Code Auditor and Static Analyzer(Similarly like a CodeRabbit)**.
 
-                You are given a code file to analyze. You must return a **strictly structured JSON response** conforming to the following TypeScript interface:
+    You are given a code file to analyze. You **MUST** return a **strictly structured JSON response** conforming to the following TypeScript interface.
 
-                \`\`\`ts
-                interface AIReviewResponse {
-                summary: Record<string, string>[];
+    ### ⚠️ Important Instructions:
 
-                code_issues: {
-                    title: string;
-                    description: string;
-                    type: 'Security' | 'Performance' | 'Maintainability' | 'Bug' | 'Style';
-                    status: 'CRITICAL' | 'WARNING' | 'INFO';
-                }[];
+    1.  **ABSOLUTELY RESPOND ONLY** with a single JSON object matching the interface below.  Do NOT include any surrounding text, explanations, or markdown outside of the JSON.
+    2.  For each item in \`code_issues\`, there **MUST** be a corresponding item in \`code_solutions\` and \`refactored_code\` using the same \`title\`.
+    3.  Each \`refactored_code\` snippet **MUST** only include the *exact code block* that should be improved or replaced — not the whole file.
+    4.  If any section has no data, return: \`[{ "note": "No content for <section_name>" }]\`
 
-                code_solutions: {
-                    title: string; // MUST MATCH code_issues.title
-                    solution: string;
-                }[];
+    ### ⚙️ Required TypeScript Interface:
 
-                code_standards: Record<string, string>[];
+    \`\`\`ts
+    interface AIReviewResponse {
+        summary: Record<string, string>[];
 
-                refactored_code: {
-                    title: string; // MUST MATCH code_issues.title
-                    code: string; // Only include the portion of the code that needs improvement
-                }[];
+        code_issues: {
+            title: string; // Short title or concept name of the issue
+            description: string; // Detailed explanation of the issue
+            type: 'Security' | 'Performance' | 'Maintainability' | 'Bug' | 'Style';
+            status: 'CRITICAL' | 'WARNING' | 'INFO';
+        }[];
 
-                eslint_issues: Record<string, string>[];
+        code_solutions: {
+            title: string; // **MUST MATCH** code_issues.title
+            solution: string; // How to fix the issue
+        }[];
 
-                bad_code_practices: Record<string, string>[];
+        code_standards: Record<string, string>[];
 
-                security_concerns: Record<string, string>[];
-                }
-                \`\`\`
+        refactored_code: {
+            title: string; // **MUST MATCH** code_issues.title
+            code: string; // **ONLY** the portion of code that needs improvement
+        }[];
 
-                ### 🔐 Important Instructions:
+        eslint_issues: Record<string, string>[];
 
-                - Respond ONLY with a single JSON object matching the interface above.
-                - For each item in \`code_issues\`, there MUST be a corresponding item in \`code_solutions\` and \`refactored_code\` using the same \`title\`.
-                - Each \`refactored_code\` snippet must only include the exact code block that should be improved or replaced — not the whole file.
-                - If any section has no data, return:
-                \`[{ "note": "No content for <section_name>" }]\`
+        bad_code_practices: Record<string, string>[];
 
-                ### 📄 Now analyze this file:
+        security_concerns: Record<string, string>[];
+    }
+    \`\`\`
 
-                **Filename:** \`${filename}\`  
-                **Language:** \`${lang}\`  
-                **Code:**
-                \`\`\`${ext}
-                ${chunk}
-                \`\`\`
-            `;
+    ### 📄 Now analyze this file:
+
+    **Filename:** \`${filename}\`
+    **Language:** \`${lang}\`
+    **Code:**
+    \`\`\`${ext}
+    ${chunk}
+    \`\`\`
+    `;
+        // const promptTemplate = (lang: string, chunk: string) => `
+        //         You are a **Senior Code Auditor and Static Analyzer**.
+
+        //         You are given a code file to analyze. You must return a **strictly structured JSON response** conforming to the following TypeScript interface:
+
+        //         \`\`\`ts
+        //         interface AIReviewResponse {
+        //         summary: Record<string, string>[];
+
+        //         code_issues: {
+        //             title: string;
+        //             description: string;
+        //             type: 'Security' | 'Performance' | 'Maintainability' | 'Bug' | 'Style';
+        //             status: 'CRITICAL' | 'WARNING' | 'INFO';
+        //         }[];
+
+        //         code_solutions: {
+        //             title: string; // MUST MATCH code_issues.title
+        //             solution: string;
+        //         }[];
+
+        //         code_standards: Record<string, string>[];
+
+        //         refactored_code: {
+        //             title: string; // MUST MATCH code_issues.title
+        //             code: string; // Only include the portion of the code that needs improvement
+        //         }[];
+
+        //         eslint_issues: Record<string, string>[];
+
+        //         bad_code_practices: Record<string, string>[];
+
+        //         security_concerns: Record<string, string>[];
+        //         }
+        //         \`\`\`
+
+        //         ### 🔐 Important Instructions:
+
+        //         - Respond ONLY with a single JSON object matching the interface above.
+        //         - For each item in \`code_issues\`, there MUST be a corresponding item in \`code_solutions\` and \`refactored_code\` using the same \`title\`.
+        //         - Each \`refactored_code\` snippet must only include the exact code block that should be improved or replaced — not the whole file.
+        //         - If any section has no data, return:
+        //         \`[{ "note": "No content for <section_name>" }]\`
+
+        //         ### 📄 Now analyze this file:
+
+        //         **Filename:** \`${filename}\`  
+        //         **Language:** \`${lang}\`  
+        //         **Code:**
+        //         \`\`\`${ext}
+        //         ${chunk}
+        //         \`\`\`
+        //     `;
         // const promptTemplate = (lang: string, chunk: string) => `
         //     You are a **Senior Software Architect and Code Auditor**.
 
