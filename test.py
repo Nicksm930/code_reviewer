@@ -1,40 +1,60 @@
-import os
+from collections import OrderedDict
+from threading import Lock
+import time
+import random
 
-user_sessions = {}
 
-def get_user_input():
-    return input("Enter your username: ")  # no input validation
+class LRUCache:
+    def __init__(self, capacity: int):
+        self.capacity = capacity
+        self.cache = OrderedDict()
+        self.lock = Lock()
 
-def authenticate(user):
-    if user == "admin":  # hardcoded credentials
-        return True
-    return False
+    def get(self, key: str):
+        with self.lock:
+            if key not in self.cache:
+                print(f"[MISS] Key '{key}' not found in cache.")
+                return None
 
-def load_user_data(user):
-    with open(f"{user}.txt", "r") as file:  # unsafe file access
-        return file.read()  # no error handling
+            # Move key to end to show it was recently used
+            self.cache.move_to_end(key)
+            print(f"[HIT] Key '{key}' found. Value: {self.cache[key]}")
+            return self.cache[key]
 
-def process_data(data):
-    lines = data.split("\n")
-    for line in lines:
-        if "password" in line:  # hardcoded logic
-            print("Sensitive info found!")
-        print(line)
+    def put(self, key: str, value: str):
+        with self.lock:
+            if key in self.cache:
+                print(f"[UPDATE] Key '{key}' updated. New Value: {value}")
+                self.cache.move_to_end(key)
+            else:
+                print(f"[INSERT] Key '{key}' added. Value: {value}")
+            self.cache[key] = value
 
-def save_session(user):
-    session_data = {"user": user, "data": []}
-    for i in range(10000):  # large unnecessary loop
-        session_data["data"].append("x" * 100)  # memory leak
-    user_sessions[user] = session_data  # unbounded growth
+            if len(self.cache) > self.capacity:
+                evicted_key, evicted_value = self.cache.popitem(last=False)
+                print(f"[EVICT] Capacity exceeded. Removed least recently used item: {evicted_key} -> {evicted_value}")
 
-def main():
-    user = get_user_input()
-    if not authenticate(user):
-        print("Access Denied")
-        return
+    def display(self):
+        with self.lock:
+            print("Current Cache State:")
+            for key, value in self.cache.items():
+                print(f"  {key}: {value}")
+            print("-" * 40)
 
-    data = load_user_data(user)
-    process_data(data)
-    save_session(user)
 
-main()
+# Example usage
+if __name__ == "__main__":
+    cache = LRUCache(capacity=3)
+
+    def simulate_access():
+        keys = ['a', 'b', 'c', 'd', 'e']
+        for _ in range(10):
+            key = random.choice(keys)
+            if random.random() > 0.5:
+                cache.put(key, f"value_of_{key}")
+            else:
+                cache.get(key)
+            cache.display()
+            time.sleep(1)
+
+    simulate_access()

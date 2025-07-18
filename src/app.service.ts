@@ -188,27 +188,41 @@ export class AppService {
 
   mapLineToDiffPosition(diffLines: string[], targetLine: number): number {
     let position = 0;
-    let currentLine = 0;
+    let newLineNumber = 0;
 
     for (const line of diffLines) {
       position++;
 
+      // Hunk header
       if (line.startsWith('@@')) {
-        const match = line.match(/\+(\d+)/);
-        if (match) currentLine = parseInt(match[1], 10) - 1;
+        const match = /@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@/.exec(line);
+        if (match) {
+          newLineNumber = parseInt(match[1], 10) - 1;
+        }
+        continue;
+      }
+
+      if (line.startsWith('-')) {
+        // Line was deleted — do not count toward new file
         continue;
       }
 
       if (line.startsWith('+') && !line.startsWith('+++')) {
-        currentLine++;
-        if (currentLine === targetLine) return position;
-      } else if (!line.startsWith('-')) {
-        currentLine++;
+        newLineNumber++;
+      } else if (!line.startsWith('+') && !line.startsWith('---')) {
+        // Context line — part of both old and new
+        newLineNumber++;
+      }
+
+      // Check if this is the line we want to comment on
+      if (newLineNumber === targetLine) {
+        return position;
       }
     }
 
-    return -1;
+    return -1; // Not found
   }
+
 
 
 }
