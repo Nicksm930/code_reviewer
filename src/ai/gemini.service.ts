@@ -1,9 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { AiProvider } from './ai.provider';
-import { ConfigService } from '@nestjs/config';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { ReviewPayloadItem } from 'src/app.service';
 import { CustomloggerService } from 'src/customlogger/customlogger.service';
+import { AiProvider } from './ai.provider';
 
 @Injectable()
 export class GeminiService extends AiProvider {
@@ -407,59 +407,112 @@ export class GeminiService extends AiProvider {
             : [code];
 
         const promptTemplate = (lang: string, chunk: string) => `
-            You are a **Senior Software Architect and Code Auditor**.
+                You are a **Senior Code Auditor and Static Analyzer**.
 
-            Your task is to **analyze the following ${lang} code**, and report ONLY the most **critical** concerns.
+                You are given a code file to analyze. You must return a **strictly structured JSON response** conforming to the following TypeScript interface:
 
-            Evaluate:
+                \`\`\`ts
+                interface AIReviewResponse {
+                summary: Record<string, string>[];
 
-            1. 🔒 **Security**
-            2. ❌ **Logic/Correctness**
-            3. 🐢 **Performance**
-            4. 🧼 **Code Quality/Maintainability**
+                code_issues: {
+                    title: string;
+                    description: string;
+                    type: 'Security' | 'Performance' | 'Maintainability' | 'Bug' | 'Style';
+                    status: 'CRITICAL' | 'WARNING' | 'INFO';
+                }[];
 
-            For each category, rate issues as:
-            - **CRITICAL**
-            - **MODERATE**
-            - or omit if not relevant.
+                code_solutions: {
+                    title: string; // MUST MATCH code_issues.title
+                    solution: string;
+                }[];
 
-            Respond in **Markdown**, using this structure:
+                code_standards: Record<string, string>[];
 
-            ---
+                refactored_code: {
+                    title: string; // MUST MATCH code_issues.title
+                    code: string; // Only include the portion of the code that needs improvement
+                }[];
 
-            ## 🧠 Summary
-            _(Very short explanation of key issues)_
+                eslint_issues: Record<string, string>[];
 
-            ---
+                bad_code_practices: Record<string, string>[];
 
-            ## ⚠️ Issues
+                security_concerns: Record<string, string>[];
+                }
+                \`\`\`
 
-            - **[Line or Concept]** – _Problem description_  
-            **Status**: CRITICAL / MODERATE  
-            **Type**: Security / Logic / Performance / Quality
+                ### 🔐 Important Instructions:
 
-            ---
+                - Respond ONLY with a single JSON object matching the interface above.
+                - For each item in \`code_issues\`, there MUST be a corresponding item in \`code_solutions\` and \`refactored_code\` using the same \`title\`.
+                - Each \`refactored_code\` snippet must only include the exact code block that should be improved or replaced — not the whole file.
+                - If any section has no data, return:
+                \`[{ "note": "No content for <section_name>" }]\`
 
-            ## 💡 Suggestions
+                ### 📄 Now analyze this file:
 
-            - **[Line or Concept]** – _Use X instead of Y because Z_
-
-            ---
-
-            ## ✅ Good Practices
-
-            - Concept A  
-            - Concept B  
-            - Concept C
-
-            ---
-
-            Here is the code:
-
-            \`\`\`${ext}
-            ${chunk}
-            \`\`\`
+                **Filename:** \`${filename}\`  
+                **Language:** \`${lang}\`  
+                **Code:**
+                \`\`\`${ext}
+                ${chunk}
+                \`\`\`
             `;
+        // const promptTemplate = (lang: string, chunk: string) => `
+        //     You are a **Senior Software Architect and Code Auditor**.
+
+        //     Your task is to **analyze the following ${lang} code**, and report ONLY the most **critical** concerns.
+
+        //     Evaluate:
+
+        //     1. 🔒 **Security**
+        //     2. ❌ **Logic/Correctness**
+        //     3. 🐢 **Performance**
+        //     4. 🧼 **Code Quality/Maintainability**
+
+        //     For each category, rate issues as:
+        //     - **CRITICAL**
+        //     - **MODERATE**
+        //     - or omit if not relevant.
+
+        //     Respond in **Markdown**, using this structure:
+
+        //     ---
+
+        //     ## 🧠 Summary
+        //     _(Very short explanation of key issues)_
+
+        //     ---
+
+        //     ## ⚠️ Issues
+
+        //     - **[Line or Concept]** – _Problem description_  
+        //     **Status**: CRITICAL / MODERATE  
+        //     **Type**: Security / Logic / Performance / Quality
+
+        //     ---
+
+        //     ## 💡 Suggestions
+
+        //     - **[Line or Concept]** – _Use X instead of Y because Z_
+
+        //     ---
+
+        //     ## ✅ Good Practices
+
+        //     - Concept A  
+        //     - Concept B  
+        //     - Concept C
+
+        //     ---
+
+        //     Here is the code:
+
+        //     \`\`\`${ext}
+        //     ${chunk}
+        //     \`\`\`
+        //     `;
 
         const responses: string[] = [];
 
