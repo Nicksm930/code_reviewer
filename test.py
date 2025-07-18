@@ -10,17 +10,6 @@ class LRUCache:
         self.cache = OrderedDict()
         self.lock = Lock()
 
-    def get(self, key: str):
-        with self.lock:
-            if key not in self.cache:
-                print(f"[MISS] Key '{key}' not found in cache.")
-                return None
-
-            # Move key to end to show it was recently used
-            self.cache.move_to_end(key)
-            print(f"[HIT] Key '{key}' found. Value: {self.cache[key]}")
-            return self.cache[key]
-
     def put(self, key: str, value: str):
         with self.lock:
             if key in self.cache:
