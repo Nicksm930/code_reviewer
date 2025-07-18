@@ -5,6 +5,8 @@ export class ReviewCacheService {
     private readonly cache = new Map<string, any>();
 
     set(commitId: string, data: any) {
+        console.log("Data", data, "commit", commitId);
+
         this.cache.set(commitId, data);
     }
 
