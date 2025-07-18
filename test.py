@@ -11,10 +11,6 @@ class LRUCache:
         self.lock = Lock()
 
     def put(self, key: str, value: str):
-        with self.lock:
-            if key in self.cache:
-                print(f"[UPDATE] Key '{key}' updated. New Value: {value}")
-                self.cache.move_to_end(key)
             else:
                 print(f"[INSERT] Key '{key}' added. Value: {value}")
             self.cache[key] = value
