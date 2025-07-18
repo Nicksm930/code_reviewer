@@ -12,6 +12,12 @@ export class AppController {
     private readonly customLogger: CustomloggerService
   ) { }
 
+  @Get('/health')
+  getHealth(): string {
+    this.customLogger.warn(`Health ChekUP Successfull`)
+    return 'ok'
+  }
+
   @Get('scan')
   async getAllFiles(): Promise<Record<string, FileLoggerInfo>> {
     const map = this.fileLoggerService.getFileMap();
